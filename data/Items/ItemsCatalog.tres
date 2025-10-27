@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemDB" load_steps=11 format=3 uid="uid://dpu7dor4326r3"]
+
+[ext_resource type="Resource" uid="uid://cttkx1kfbqtg3" path="res://data/Items/Wheat.tres" id="1_cy0fy"]
+[ext_resource type="Script" uid="uid://k0oeo8cvtysn" path="res://data/Items/ItemDB.gd" id="1_ofils"]
+[ext_resource type="Resource" uid="uid://cyiyvj1hu658e" path="res://data/Items/RabbitMeat.tres" id="2_xdey0"]
+[ext_resource type="Resource" uid="uid://cg14vrqfmcma5" path="res://data/Items/Hemp.tres" id="3_qkibh"]
+[ext_resource type="Resource" uid="uid://bsrjbqo73rob2" path="res://data/Items/Aloe.tres" id="4_nqmmg"]
+[ext_resource type="Resource" uid="uid://dc4xkrj0qf45c" path="res://data/Items/Stone.tres" id="5_petay"]
+[ext_resource type="Resource" uid="uid://kjlpniys3r55" path="res://data/Items/Scrap.tres" id="6_8tqx4"]
+[ext_resource type="Resource" uid="uid://ctw3a07dvimsb" path="res://data/Items/Cotton.tres" id="7_p027r"]
+[ext_resource type="Resource" uid="uid://unpxmbuk5l84" path="res://data/Items/Coffee.tres" id="8_nqmmg"]
+[ext_resource type="Resource" uid="uid://bsr1hueklq88j" path="res://data/Items/WheatBread.tres" id="9_petay"]
+
+[resource]
+script = ExtResource("1_ofils")
+items = {
+&"Aloe": ExtResource("4_nqmmg"),
+&"Coffee": ExtResource("8_nqmmg"),
+&"Cotton": ExtResource("7_p027r"),
+&"Hemp": ExtResource("3_qkibh"),
+&"RabbitMeat": ExtResource("2_xdey0"),
+&"Scrap": ExtResource("6_8tqx4"),
+&"Stone": ExtResource("5_petay"),
+&"Wheat": ExtResource("1_cy0fy"),
+&"WheatBread": ExtResource("9_petay")
+}
+metadata/_custom_type_script = "uid://k0oeo8cvtysn"

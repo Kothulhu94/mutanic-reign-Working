@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillDomain" load_steps=9 format=3 uid="uid://domain_trading"]
+
+[ext_resource type="Script" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/MarketAnalysis.tres" id="2"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/CaravanLogistics.tres" id="3"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/NegotiationTactics.tres" id="4"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/MarketMonopoly.tres" id="5"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/TradeNetworks.tres" id="6"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/CompanionMerchants.tres" id="7"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/EconomicDominance.tres" id="8"]
+
+[resource]
+script = ExtResource("1")
+domain_id = &"Trading"
+display_name = "Trading"
+description = "Dominate markets through cunning and determination. Control trade networks and accumulate wealth."
+primary_attribute = &"Guile"
+secondary_attribute = &"Willpower"
+skills = [ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8")]
+bonus_at_rank_5 = "+10% trade profits and caravan speed"
+bonus_at_rank_10 = "+20% trade profits and market influence"

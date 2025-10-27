@@ -1,0 +1,22 @@
+extends Resource
+class_name HubStates
+
+@export var hub_id: StringName
+@export var display_name: String = "Settlement"
+@export var governor_id: StringName = StringName()  # Character ID of assigned governor
+
+@export var money: int = 0
+
+# Inventory: item -> count (ints). You can swap to floats later if needed.
+@export var inventory: Dictionary = {}
+
+# Population state
+@export var base_population_cap: int = 100
+
+@export var trade_prices: Dictionary = {}  # item_id -> current_price
+# Slot states (length 9 for a 3x3 grid; center is ignored by BuildSlots)
+@export var slots: Array[BuildSlotState] = []# Array[BuildSlotState]
+
+func ensure_slots(lens: int = 9) -> void:
+	while slots.size() < lens:
+		slots.append(null)

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillDomain" load_steps=9 format=3 uid="uid://domain_governance"]
+
+[ext_resource type="Script" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/CivilAdministration.tres" id="2"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/TaxOptimization.tres" id="3"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/UrbanDevelopment.tres" id="4"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/PopulationEngineering.tres" id="5"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/SpecializedEconomy.tres" id="6"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/CompanionGovernors.tres" id="7"]
+[ext_resource type="Resource" path="res://data/Skills/Governance/AdministrativeEmpire.tres" id="8"]
+
+[resource]
+script = ExtResource("1")
+domain_id = &"Governance"
+display_name = "Governance"
+description = "Rule with wisdom and authority. Optimize administration and shape prosperous societies."
+primary_attribute = &"Willpower"
+secondary_attribute = &"Intellect"
+skills = [ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8")]
+bonus_at_rank_5 = "+10% administrative efficiency and tax income"
+bonus_at_rank_10 = "+20% administrative efficiency and population growth"

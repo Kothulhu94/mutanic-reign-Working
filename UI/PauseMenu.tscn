@@ -1,0 +1,45 @@
+[gd_scene load_steps=3 format=3 uid="uid://mll5vsg753d"]
+
+[ext_resource type="Script" uid="uid://dm5w0yxg72ud" path="res://UI/PauseMenu.gd" id="1_05bun"]
+[ext_resource type="PackedScene" uid="uid://ccjf7l2hvwepv" path="res://UI/CharacterSheetUI.tscn" id="2_tsvmi"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_05bun")
+character_sheet_scene = ExtResource("2_tsvmi")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+accessibility_name = "Pause"
+color = Color(0.043137256, 0.043137256, 0.043137256, 0.5882353)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+accessibility_name = "PlayerMenu"
+
+[node name="ResumeButton" type="Button" parent="ColorRect/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+accessibility_name = "resume"
+text = "RESUME"
+
+[node name="CharacterSheetButton" type="Button" parent="ColorRect/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+accessibility_name = "Character Sheet"
+text = "Character Sheet"

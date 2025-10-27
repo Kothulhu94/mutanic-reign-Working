@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SkillDomain" load_steps=10 format=3 uid="uid://domain_ranged"]
+
+[ext_resource type="Script" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/ArcheryDrills.tres" id="2"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/OpeningVolley.tres" id="3"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/SupplyEfficiency.tres" id="4"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/SiegeEngineering.tres" id="5"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/SuppressionTactics.tres" id="6"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/CompanionMarksmen.tres" id="7"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/ArtilleryMaster.tres" id="8"]
+[ext_resource type="Resource" path="res://data/Skills/Ranged/PrecisionTargeting.tres" id="9"]
+
+[resource]
+script = ExtResource("1")
+domain_id = &"Ranged"
+display_name = "Ranged"
+description = "Precision and tactical superiority through ranged warfare. Strike from distance with devastating accuracy."
+primary_attribute = &"Guile"
+secondary_attribute = &"Intellect"
+skills = [ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9")]
+bonus_at_rank_5 = "+10% ranged damage and accuracy"
+bonus_at_rank_10 = "+20% ranged damage and accuracy"

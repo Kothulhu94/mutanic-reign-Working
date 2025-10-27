@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\mutanic-reign\" -name \"*.gd\" -not -path \"*/.godot/*\" -not -path \"*/addons/*\" -exec wc -l {})",
+      "Bash(awk '$1 > 5')"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
