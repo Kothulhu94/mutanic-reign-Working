@@ -2,7 +2,9 @@ extends Node
 
 ## Resolves a single combat round between two actors
 func resolve_combat_round(actor_a: Node2D, actor_b: Node2D) -> void:
-	print("[CombatManager] resolve_combat_round called: %s vs %s" % [actor_a.name if actor_a else "null", actor_b.name if actor_b else "null"])
+	var actor_a_name: String = "null" if actor_a == null else actor_a.name
+	var actor_b_name: String = "null" if actor_b == null else actor_b.name
+	print("[CombatManager] resolve_combat_round called: %s vs %s" % [actor_a_name, actor_b_name])
 
 	if actor_a == null or actor_b == null:
 		print("[CombatManager] ERROR: One or both actors are null!")
@@ -11,7 +13,9 @@ func resolve_combat_round(actor_a: Node2D, actor_b: Node2D) -> void:
 	var a_sheet: CharacterSheet = actor_a.get("charactersheet")
 	var b_sheet: CharacterSheet = actor_b.get("charactersheet")
 
-	print("[CombatManager] Sheets found: %s=%s, %s=%s" % [actor_a.name, "found" if a_sheet else "NULL", actor_b.name, "found" if b_sheet else "NULL"])
+	var a_sheet_status: String = "NULL" if a_sheet == null else "found"
+	var b_sheet_status: String = "NULL" if b_sheet == null else "found"
+	print("[CombatManager] Sheets found: %s=%s, %s=%s" % [actor_a.name, a_sheet_status, actor_b.name, b_sheet_status])
 
 	if a_sheet == null or b_sheet == null:
 		print("[CombatManager] ERROR: Could not find charactersheet on one or both actors!")

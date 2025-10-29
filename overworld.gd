@@ -443,6 +443,9 @@ func _on_combat_ended(attacker: Node2D, defender: Node2D, winner: Node2D) -> voi
 	if _encounter_ui != null:
 		_encounter_ui.close_ui()
 
+	if winner == null:
+		return
+
 	if winner == _player_bus:
 		# Remove defeated actor immediately
 		var defeated: Node2D = defender if attacker == _player_bus else attacker

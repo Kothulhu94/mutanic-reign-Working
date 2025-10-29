@@ -172,6 +172,11 @@ func _create_defeated_item_row(item_id: StringName, stock: int) -> void:
 	plus_button.custom_minimum_size = Vector2(30, 0)
 	plus_button.pressed.connect(_on_quantity_adjust.bind(item_id, 1))
 
+	var take_button: Button = Button.new()
+	take_button.text = "Take"
+	take_button.custom_minimum_size = Vector2(60, 0)
+	take_button.pressed.connect(_on_take_item_pressed.bind(item_id))
+
 	var take_label: Label = Label.new()
 	take_label.text = "Take:"
 
@@ -179,6 +184,7 @@ func _create_defeated_item_row(item_id: StringName, stock: int) -> void:
 	adjuster_container.add_child(minus_button)
 	adjuster_container.add_child(qty_input)
 	adjuster_container.add_child(plus_button)
+	adjuster_container.add_child(take_button)
 
 	var node_data: Dictionary = {
 		"container": container,
@@ -186,6 +192,7 @@ func _create_defeated_item_row(item_id: StringName, stock: int) -> void:
 		"base_button": base_button,
 		"adjuster": adjuster_container,
 		"qty_input": qty_input,
+		"take_button": take_button,
 		"stock": stock
 	}
 
@@ -261,13 +268,24 @@ func _get_defeated_inventory() -> Dictionary:
 
 	return {}
 
+func _on_take_item_pressed(item_id: StringName) -> void:
+	var amount: int = loot_cart.get(item_id, 0)
+	if amount <= 0:
+		return
+
+	if _transfer_item_to_player(item_id, amount):
+		loot_cart[item_id] = 0
+		_refresh_ui()
+
 func _on_take_all_pressed() -> void:
 	var defeated_inventory: Dictionary = _get_defeated_inventory()
 
 	for item_id in defeated_inventory.keys():
 		var amount: int = defeated_inventory.get(item_id, 0)
 		if amount > 0:
-			_update_cart_for_item(item_id, amount)
+			_transfer_item_to_player(item_id, amount)
+
+	close_loot()
 
 func _on_done_pressed() -> void:
 	# Transfer items from defeated to player
@@ -289,3 +307,21 @@ func _remove_from_defeated(item_id: StringName, amount: int) -> void:
 		var caravan_state: Variant = defeated_actor.get("caravan_state")
 		if caravan_state != null and caravan_state.has_method("remove_item"):
 			caravan_state.remove_item(item_id, amount)
+
+func _transfer_item_to_player(item_id: StringName, amount: int) -> bool:
+	if player_actor == null or defeated_actor == null:
+		return false
+
+	if amount <= 0:
+		return false
+
+	if player_actor.has_method("add_item"):
+		if player_actor.add_item(item_id, amount):
+			_remove_from_defeated(item_id, amount)
+			return true
+
+	return false
+
+func _refresh_ui() -> void:
+	_populate_player_list()
+	_populate_defeated_list()

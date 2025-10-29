@@ -12,6 +12,9 @@ signal exit_pressed()
 
 var _attacker: Node2D = null
 var _defender: Node2D = null
+var _combat_active: bool = false
+var _tick_counter: int = 0
+const TICKS_PER_COMBAT_ROUND: int = 5
 
 func _ready() -> void:
 	hide()
@@ -24,10 +27,20 @@ func _ready() -> void:
 func open_encounter(attacker: Node2D, defender: Node2D) -> void:
 	_attacker = attacker
 	_defender = defender
+	_combat_active = false
+	_tick_counter = 0
+
+	if _defender != null and _defender.get("_is_paused") != null:
+		_defender.set("_is_paused", true)
 
 	# Reset UI state for new encounter
 	if attack_button != null:
 		attack_button.disabled = false
+		attack_button.text = "Attack"
+		if attack_button.pressed.is_connected(_on_retreat_pressed):
+			attack_button.pressed.disconnect(_on_retreat_pressed)
+		if not attack_button.pressed.is_connected(_on_attack_pressed):
+			attack_button.pressed.connect(_on_attack_pressed)
 	if combat_label != null:
 		combat_label.text = "Encounter!"
 
@@ -35,24 +48,33 @@ func open_encounter(attacker: Node2D, defender: Node2D) -> void:
 	modulate = Color.WHITE
 	z_index = 100
 
-	var timekeeper: Node = get_node_or_null("/root/Timekeeper")
-	if timekeeper != null and timekeeper.has_method("pause"):
-		timekeeper.pause()
-
 ## Closes the encounter UI
 func close_ui() -> void:
 	hide()
+	_stop_automatic_combat()
 
-	var timekeeper: Node = get_node_or_null("/root/Timekeeper")
-	if timekeeper != null and timekeeper.has_method("resume"):
-		timekeeper.resume()
+	if _defender != null and _defender.get("_is_paused") != null:
+		_defender.set("_is_paused", false)
 
 func _on_attack_pressed() -> void:
 	if _attacker == null or _defender == null:
 		return
 
-	# Disable button to prevent spam clicks
-	attack_button.disabled = true
+	# Execute first combat round immediately
+	_execute_combat_round()
+
+	# Start automatic combat cycle
+	_start_automatic_combat()
+
+	# Transform button to Retreat
+	if attack_button != null:
+		attack_button.text = "Retreat"
+		attack_button.pressed.disconnect(_on_attack_pressed)
+		attack_button.pressed.connect(_on_retreat_pressed)
+
+func _execute_combat_round() -> void:
+	if _attacker == null or _defender == null:
+		return
 
 	# Resolve one combat round
 	var combat_manager: Node = get_node_or_null("/root/CombatManager")
@@ -64,7 +86,6 @@ func _on_attack_pressed() -> void:
 	var defender_sheet: CharacterSheet = _defender.get("charactersheet")
 
 	if attacker_sheet == null or defender_sheet == null:
-		attack_button.disabled = false
 		return
 
 	# Update combat feedback
@@ -81,9 +102,38 @@ func _on_attack_pressed() -> void:
 	elif defender_sheet.current_health <= 0:
 		combat_ended.emit(_attacker, _defender, _attacker)
 		close_ui()
-	else:
-		# Re-enable button for next round
-		attack_button.disabled = false
+
+func _start_automatic_combat() -> void:
+	_combat_active = true
+	_tick_counter = 0
+
+	var timekeeper: Node = get_node_or_null("/root/Timekeeper")
+	if timekeeper != null and timekeeper.has_signal("tick"):
+		if not timekeeper.tick.is_connected(_on_timekeeper_tick):
+			timekeeper.tick.connect(_on_timekeeper_tick)
+
+func _stop_automatic_combat() -> void:
+	_combat_active = false
+	_tick_counter = 0
+
+	var timekeeper: Node = get_node_or_null("/root/Timekeeper")
+	if timekeeper != null and timekeeper.has_signal("tick"):
+		if timekeeper.tick.is_connected(_on_timekeeper_tick):
+			timekeeper.tick.disconnect(_on_timekeeper_tick)
+
+func _on_timekeeper_tick(_step: float) -> void:
+	if not _combat_active:
+		return
+
+	_tick_counter += 1
+
+	if _tick_counter >= TICKS_PER_COMBAT_ROUND:
+		_tick_counter = 0
+		_execute_combat_round()
+
+func _on_retreat_pressed() -> void:
+	combat_ended.emit(_attacker, _defender, null)
+	close_ui()
 
 func _on_exit_pressed() -> void:
 	exit_pressed.emit()

@@ -153,7 +153,7 @@ func _state_buying_at_home() -> void:
 	# Spend all money on preferred items with surplus
 	var items_to_buy: Dictionary = _get_preferred_items_with_surplus(home_hub)
 
-	var total_bought: int = 0
+	var _total_bought: int = 0  # Track total items bought (reserved for future use)
 	for item_id: StringName in items_to_buy.keys():
 		var available: int = items_to_buy[item_id]
 		var price: float = home_hub.get_item_price(item_id)
@@ -167,7 +167,7 @@ func _state_buying_at_home() -> void:
 				caravan_state.money -= total_cost
 				caravan_state.add_item(item_id, amount_to_buy)
 				purchase_prices[item_id] = price
-				total_bought += amount_to_buy
+				_total_bought += amount_to_buy
 
 	# Find a destination hub
 	if caravan_state.inventory.size() > 0:

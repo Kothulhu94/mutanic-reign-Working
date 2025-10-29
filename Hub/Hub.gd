@@ -12,7 +12,7 @@ class_name Hub
 var _item_db: ItemDB
 var _economy_config: EconomyConfig
 
-# Track if hub has been visited by player
+# Track if hub has been visited by player (reserved for future use)
 var _has_been_visited: bool = false
 
 # Exported properties with setters so runtime/editor changes rewire the engine

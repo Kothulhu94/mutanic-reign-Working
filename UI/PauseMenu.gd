@@ -1,10 +1,17 @@
 # PauseMenu.gd
 extends CanvasLayer
 
-@onready var resume_button: Button = %ResumeButton # Use %UniqueName syntax if you set it up
-@onready var character_sheet_button: Button = %CharacterSheetButton # Or use get_node("path/to/button")
+@onready var resume_button: Button = %ResumeButton
+@onready var character_sheet_button: Button = %CharacterSheetButton
+@onready var inventory_button: Button = %InventoryButton
+@onready var save_button: Button = %SaveButton
+@onready var load_button: Button = %LoadButton
 @export var character_sheet_scene: PackedScene
-var character_sheet_instance: Control = null# Called when the node enters the scene tree for the first time.
+@export var inventory_ui_scene: PackedScene
+@export var save_load_ui_scene: PackedScene
+var character_sheet_instance: Control = null
+var inventory_ui_instance: Control = null
+var save_load_ui_instance: Control = null# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	print("=== PauseMenu Debug Info ===")
 	print("PauseMenu _ready() called - PauseMenu is active")
@@ -24,7 +31,13 @@ func _ready() -> void:
 	# Connect button signals
 	resume_button.pressed.connect(_on_resume_pressed)
 	character_sheet_button.pressed.connect(_on_character_sheet_pressed)
+	inventory_button.pressed.connect(_on_inventory_pressed)
+	save_button.pressed.connect(_on_save_pressed)
+	load_button.pressed.connect(_on_load_pressed)
 	print("PauseMenu buttons connected successfully")
+
+	_setup_inventory_ui()
+	_setup_save_load_ui()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -54,6 +67,9 @@ func _resume_game() -> void:
 	# Hide the Character Sheet UI if it's open
 	if character_sheet_instance != null:
 		character_sheet_instance.hide()
+	# Hide the Inventory UI if it's open
+	if inventory_ui_instance != null:
+		inventory_ui_instance.hide()
 
 
 func _on_resume_pressed() -> void:
@@ -85,3 +101,63 @@ func _on_character_sheet_pressed() -> void:
 	# Display the character sheet
 	if character_sheet_instance != null and character_sheet_instance.has_method("display_sheet"):
 		character_sheet_instance.display_sheet(character_sheet)
+
+func _setup_inventory_ui() -> void:
+	if inventory_ui_scene != null:
+		inventory_ui_instance = inventory_ui_scene.instantiate() as Control
+		add_child(inventory_ui_instance)
+		inventory_ui_instance.process_mode = Node.PROCESS_MODE_ALWAYS
+		inventory_ui_instance.hide()
+		print("InventoryUI instantiated and added to PauseMenu")
+
+func _on_inventory_pressed() -> void:
+	print("Inventory button pressed!")
+	if inventory_ui_instance == null:
+		print("ERROR: inventory_ui_instance is null!")
+		return
+
+	$ColorRect.hide()
+	if inventory_ui_instance.has_method("display_inventory"):
+		inventory_ui_instance.display_inventory()
+	if not inventory_ui_instance.inventory_closed.is_connected(_on_inventory_closed):
+		inventory_ui_instance.inventory_closed.connect(_on_inventory_closed)
+
+func _on_inventory_closed() -> void:
+	if inventory_ui_instance != null and inventory_ui_instance.inventory_closed.is_connected(_on_inventory_closed):
+		inventory_ui_instance.inventory_closed.disconnect(_on_inventory_closed)
+	$ColorRect.show()
+
+func _setup_save_load_ui() -> void:
+	if save_load_ui_scene != null:
+		save_load_ui_instance = save_load_ui_scene.instantiate() as Control
+		add_child(save_load_ui_instance)
+		save_load_ui_instance.process_mode = Node.PROCESS_MODE_ALWAYS
+		save_load_ui_instance.hide()
+		print("SaveLoadUI instantiated and added to PauseMenu")
+
+func _on_save_pressed() -> void:
+	print("Save button pressed!")
+	if save_load_ui_instance == null:
+		print("ERROR: save_load_ui_instance is null!")
+		return
+
+	$ColorRect.hide()
+	save_load_ui_instance.open_save_menu()
+	if not save_load_ui_instance.save_load_closed.is_connected(_on_save_load_closed):
+		save_load_ui_instance.save_load_closed.connect(_on_save_load_closed)
+
+func _on_load_pressed() -> void:
+	print("Load button pressed!")
+	if save_load_ui_instance == null:
+		print("ERROR: save_load_ui_instance is null!")
+		return
+
+	$ColorRect.hide()
+	save_load_ui_instance.open_load_menu()
+	if not save_load_ui_instance.save_load_closed.is_connected(_on_save_load_closed):
+		save_load_ui_instance.save_load_closed.connect(_on_save_load_closed)
+
+func _on_save_load_closed() -> void:
+	if save_load_ui_instance != null and save_load_ui_instance.save_load_closed.is_connected(_on_save_load_closed):
+		save_load_ui_instance.save_load_closed.disconnect(_on_save_load_closed)
+	$ColorRect.show()
