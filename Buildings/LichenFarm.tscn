@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5mw2r9n1tuzx"]
+
+[ext_resource type="Script" path="res://Buildings/LichenFarm.gd" id="1_lich"]
+
+[node name="LichenFarm" type="Node2D"]
+script = ExtResource("1_lich")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]

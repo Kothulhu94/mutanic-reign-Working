@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemDef" load_steps=2 format=3 uid="uid://d8e2f5s0rvyz0"]
+
+[ext_resource type="Script" uid="uid://s1txlrx5unui" path="res://data/Items/ItemDef.gd" id="1_hlslv"]
+
+[resource]
+script = ExtResource("1_hlslv")
+id = &"HealingSalve"
+display_name = "Healing Salve"
+tags = Array[StringName]([&"medical", &"ointment", &"processed"])
+base_price = 16.0
+metadata/_custom_type_script = "uid://s1txlrx5unui"

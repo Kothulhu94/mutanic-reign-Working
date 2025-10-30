@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemDef" load_steps=2 format=3 uid="uid://c8n6x4w9pqrst"]
+
+[ext_resource type="Script" uid="uid://s1txlrx5unui" path="res://data/Items/ItemDef.gd" id="1_hbbrd"]
+
+[resource]
+script = ExtResource("1_hbbrd")
+id = &"HydroBerriesBread"
+display_name = "Hydro-Berry Bread"
+tags = Array[StringName]([&"food", &"prepared", &"processed"])
+base_price = 19.2
+metadata/_custom_type_script = "uid://s1txlrx5unui"
