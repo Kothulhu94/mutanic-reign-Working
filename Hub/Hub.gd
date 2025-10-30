@@ -7,6 +7,7 @@ class_name Hub
 # UI references
 @export var hub_menu_ui: HubMenuUI = null
 @export var market_ui: MarketUI = null
+@export var recruitment_ui: RecruitmentUI = null
 
 # Backing fields for exported props
 var _item_db: ItemDB
@@ -39,6 +40,7 @@ var _inventory_float: Dictionary = {}
 # Signed snapshots (mirrors engine output each tick)
 @export var food_level: float = 0.0              # servings: +surplus / –deficit
 @export var infrastructure_level: float = 0.0    # units: +surplus / –deficit
+@export var medical_level: float = 0.0           # units: +surplus / –deficit
 
 # -------- Dynamic prices --------
 @export var item_prices: Dictionary = {}         # item_id(StringName)-> price(float)
@@ -50,11 +52,19 @@ var _last_produced: Dictionary = {}
 # Economy engine
 var _engine: HubEconomy = HubEconomy.new()
 
+# Troop production timer (5 minutes = 300 seconds)
+const TROOP_PRODUCTION_INTERVAL: float = 300.0
+var _troop_production_timer: float = 0.0
+
 func _ready() -> void:
 	# Ensure hub state
 	if state == null:
 		state = HubStates.new()
 	state.ensure_slots(9)
+
+	# Initialize troop stock if empty
+	if state.troop_stock.is_empty():
+		state.troop_stock[&"militia"] = 5
 
 	# Realize placed buildings from state
 	if slots != null:
@@ -88,12 +98,20 @@ func _ready() -> void:
 			hub_menu_ui.menu_closed.connect(_on_menu_closed)
 		if hub_menu_ui.has_signal("market_opened"):
 			hub_menu_ui.market_opened.connect(_on_market_opened)
+		if hub_menu_ui.has_signal("recruitment_opened"):
+			hub_menu_ui.recruitment_opened.connect(_on_recruitment_opened)
 
 	if market_ui != null:
 		if market_ui.has_signal("market_closed"):
 			market_ui.market_closed.connect(_on_market_closed)
 		if market_ui.has_signal("transaction_confirmed"):
 			market_ui.transaction_confirmed.connect(_on_transaction_confirmed)
+
+	if recruitment_ui != null:
+		if recruitment_ui.has_signal("recruitment_closed"):
+			recruitment_ui.recruitment_closed.connect(_on_recruitment_closed)
+		if recruitment_ui.has_signal("recruitment_confirmed"):
+			recruitment_ui.recruitment_confirmed.connect(_on_recruitment_confirmed)
 
 func _on_timekeeper_tick(dt: float) -> void:
 	# Gather buildings list
@@ -136,12 +154,16 @@ func _on_timekeeper_tick(dt: float) -> void:
 	# Mirror snapshots from engine
 	food_level = float(r.get("food_level", 0.0))
 	infrastructure_level = float(r.get("infrastructure_level", 0.0))
+	medical_level = float(r.get("medical_level", 0.0))
 
 	# ---- Price pipeline: ingest telemetry -> update prices
 	_last_consumed = (r.get("consumed", {}) as Dictionary)
 	_last_produced = (r.get("produced", {}) as Dictionary)
 	_ingest_consumption_telemetry(_last_consumed)
 	_update_item_prices()
+
+	# ---- Troop production
+	_produce_troops(dt)
 
 # -------------------------------------------------------------------
 # Engine/config wiring
@@ -388,6 +410,34 @@ func _on_transaction_confirmed(cart: Array[Dictionary]) -> void:
 			bus_ref.money += revenue
 			state.money -= revenue
 
+func _on_recruitment_opened() -> void:
+	# Only respond if this hub was the one that opened the menu
+	if hub_menu_ui == null or hub_menu_ui.current_hub != self:
+		return
+
+	if recruitment_ui == null:
+		push_warning("Hub %s has no RecruitmentUI assigned" % name)
+		return
+
+	# Get bus reference from the overworld scene
+	var bus_ref: Bus = _get_bus_from_scene_tree()
+	if bus_ref == null:
+		push_warning("Hub %s cannot find Bus in scene tree" % name)
+		return
+
+	recruitment_ui.open(bus_ref, self)
+
+func _on_recruitment_closed() -> void:
+	# Only respond if this hub was the one that opened the recruitment
+	if recruitment_ui != null and recruitment_ui.current_hub == self:
+		# Reset hub menu state when recruitment closes
+		if hub_menu_ui != null:
+			hub_menu_ui.current_hub = null
+
+func _on_recruitment_confirmed(recruits: Array[Dictionary]) -> void:
+	# Additional logic can go here if needed (e.g., logging, achievements)
+	pass
+
 # -------------------------------------------------------------------
 # Pricing helpers (EMA-based consumption -> dynamic prices)
 # -------------------------------------------------------------------
@@ -442,3 +492,14 @@ func _update_item_prices() -> void:
 		var stock: float = _current_amount(id)
 		var rate: float  = _estimate_consumption_rate(id)
 		item_prices[id] = _calculate_item_price(id, stock, rate)
+
+# -------------------------------------------------------------------
+# Troop production system
+# -------------------------------------------------------------------
+func _produce_troops(dt: float) -> void:
+	_troop_production_timer += dt
+
+	if _troop_production_timer >= TROOP_PRODUCTION_INTERVAL:
+		_troop_production_timer -= TROOP_PRODUCTION_INTERVAL
+
+		state.troop_stock[&"militia"] = state.troop_stock.get(&"militia", 0) + 1

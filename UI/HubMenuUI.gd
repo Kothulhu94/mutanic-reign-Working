@@ -5,6 +5,7 @@ class_name HubMenuUI
 
 signal menu_closed()
 signal market_opened()
+signal recruitment_opened()
 
 @onready var panel: Panel = $Panel
 @onready var title_label: Label = $Panel/MarginContainer/VBoxContainer/TitleLabel
@@ -66,4 +67,13 @@ func _on_close_pressed() -> void:
 func _on_market_pressed() -> void:
 	# Signal that market should be opened
 	market_opened.emit()
-	close_menu()
+	# Don't fully close - just hide and let market UI take over
+	hide()
+	# Note: current_hub is kept so we know this menu was open
+
+func _on_recruitment_pressed() -> void:
+	# Signal that recruitment should be opened
+	recruitment_opened.emit()
+	# Don't fully close - just hide and let recruitment UI take over
+	hide()
+	# Note: current_hub is kept so we know this menu was open

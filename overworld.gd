@@ -139,6 +139,10 @@ func _ready() -> void:
 			caravan.player_initiated_chase.connect(_on_chase_initiated)
 
 func _process(delta: float) -> void:
+	# Don't process when game is paused (UI is open)
+	if _is_paused:
+		return
+
 	# Update caravan spawn timer
 	caravan_spawn_timer += delta
 	if caravan_spawn_timer >= caravan_spawn_interval:
@@ -447,10 +451,8 @@ func _on_combat_ended(attacker: Node2D, defender: Node2D, winner: Node2D) -> voi
 		return
 
 	if winner == _player_bus:
-		# Remove defeated actor immediately
+		# Identify defeated actor (will be freed after looting)
 		var defeated: Node2D = defender if attacker == _player_bus else attacker
-		if defeated != null and defeated != _player_bus:
-			defeated.queue_free()
 
 		# Open loot UI
 		if _loot_ui != null:
@@ -464,6 +466,7 @@ func _on_encounter_exit() -> void:
 	if _encounter_ui != null:
 		_encounter_ui.close_ui()
 
-func _on_loot_closed(_defeated_actor: Node2D) -> void:
-	# Actor already removed in _on_combat_ended
-	pass
+func _on_loot_closed(_target_actor: Node2D) -> void:
+	# Free the target actor now that looting is complete
+	if _target_actor != null and _target_actor != _player_bus:
+		_target_actor.queue_free()

@@ -21,6 +21,12 @@ class_name CharacterSheet
 ## Dictionary of learned skills: { skill_id (StringName) -> SkillSpec instance }
 var skills: Dictionary = {}
 
+## Troop inventory system
+## Dictionary of recruited troops: { troop_id (StringName) -> count (int) }
+var troop_inventory: Dictionary = {}
+## Maximum number of troops that can be recruited
+@export var max_troop_capacity: int = 10
+
 ## Current health tracking for combat
 var current_health: int = 0
 
@@ -35,22 +41,100 @@ func _init() -> void:
 func get_effective_health() -> int:
 	var might_level: int = attributes.get_attribute_level(&"Might")
 	var willpower_level: int = attributes.get_attribute_level(&"Willpower")
-	return base_health + (might_level * attribute_health_multiplier) + (willpower_level * attribute_health_multiplier)
+	var base: int = base_health + (might_level * attribute_health_multiplier) + (willpower_level * attribute_health_multiplier)
+	var troop_bonuses: Dictionary = get_total_troop_bonuses()
+	return base + int(troop_bonuses.get("health", 0))
 
 func get_effective_damage() -> int:
 	var might_level: int = attributes.get_attribute_level(&"Might")
 	var guile_level: int = attributes.get_attribute_level(&"Guile")
-	return base_damage + (might_level * attribute_damage_multiplier) + (guile_level * attribute_damage_multiplier)
+	var base: int = base_damage + (might_level * attribute_damage_multiplier) + (guile_level * attribute_damage_multiplier)
+	var troop_bonuses: Dictionary = get_total_troop_bonuses()
+	return base + int(troop_bonuses.get("damage", 0))
 
 func get_effective_defense() -> int:
 	var guile_level: int = attributes.get_attribute_level(&"Guile")
 	var intellect_level: int = attributes.get_attribute_level(&"Intellect")
-	return base_defense + (guile_level * attribute_defense_multiplier) + (intellect_level * attribute_defense_multiplier)
+	var base: int = base_defense + (guile_level * attribute_defense_multiplier) + (intellect_level * attribute_defense_multiplier)
+	var troop_bonuses: Dictionary = get_total_troop_bonuses()
+	return base + int(troop_bonuses.get("defense", 0))
 # Example for speed - Needs base speed source (like CaravanType or player base speed)
 # func get_effective_speed(base_speed : float) -> float:
 # 	var speed_mod = attributes.get_modifier("agility") # Example attribute
 # 	return base_speed * (1.0 + speed_mod / 100.0) # Example modifier logic
 # 	return base_speed # Placeholder if no logic yet
+
+# --- Troop Management Functions ---
+
+## Calculates total bonuses from all recruited troops
+## Loads troop definitions directly from resources to avoid autoload dependency
+func get_total_troop_bonuses() -> Dictionary:
+	var total_health: int = 0
+	var total_damage: int = 0
+	var total_defense: int = 0
+
+	for troop_id: StringName in troop_inventory.keys():
+		var count: int = troop_inventory.get(troop_id, 0)
+		if count <= 0:
+			continue
+
+		var troop_type: TroopType = _load_troop_type(troop_id)
+		if troop_type != null:
+			total_health += troop_type.health_bonus * count
+			total_damage += troop_type.damage_bonus * count
+			total_defense += troop_type.defense_bonus * count
+
+	return {
+		"health": total_health,
+		"damage": total_damage,
+		"defense": total_defense
+	}
+
+## Loads a troop type resource by ID
+func _load_troop_type(troop_id: StringName) -> TroopType:
+	var resource_path: String = "res://data/troops/%s.tres" % troop_id
+	if ResourceLoader.exists(resource_path):
+		return load(resource_path) as TroopType
+	return null
+
+## Gets the total number of troops recruited
+func get_total_troop_count() -> int:
+	var total: int = 0
+	for count: int in troop_inventory.values():
+		total += count
+	return total
+
+## Gets the count of a specific troop type
+func get_troop_count(troop_id: StringName) -> int:
+	return troop_inventory.get(troop_id, 0)
+
+## Adds troops to the inventory if capacity allows
+func add_troop(troop_id: StringName, amount: int) -> bool:
+	if amount <= 0:
+		return false
+
+	var current_total: int = get_total_troop_count()
+	if current_total + amount > max_troop_capacity:
+		return false
+
+	troop_inventory[troop_id] = troop_inventory.get(troop_id, 0) + amount
+	return true
+
+## Removes troops from the inventory
+func remove_troop(troop_id: StringName, amount: int) -> bool:
+	if amount <= 0:
+		return false
+
+	var current: int = troop_inventory.get(troop_id, 0)
+	if current < amount:
+		return false
+
+	troop_inventory[troop_id] = current - amount
+	if troop_inventory[troop_id] <= 0:
+		troop_inventory.erase(troop_id)
+
+	return true
+
 ## Adds a new skill to the character's skill list.
 ## Skills start at rank 1 with 0 XP (rank 0 would mean "not learned").
 func add_skill(skill_id: StringName, skill_db: SkillDatabase) -> void:

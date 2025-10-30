@@ -13,18 +13,6 @@ var character_sheet_instance: Control = null
 var inventory_ui_instance: Control = null
 var save_load_ui_instance: Control = null# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	print("=== PauseMenu Debug Info ===")
-	print("PauseMenu _ready() called - PauseMenu is active")
-	print("PauseMenu process_mode: ", process_mode)
-	print("'pause' action exists in InputMap: ", InputMap.has_action("pause"))
-	if InputMap.has_action("pause"):
-		var events = InputMap.action_get_events("pause")
-		print("'pause' action has ", events.size(), " event(s)")
-		for event in events:
-			if event is InputEventKey:
-				print("  - Key event: keycode=", event.keycode, " physical=", event.physical_keycode)
-	print("============================")
-
 	# Don't hide the CanvasLayer - instead hide the ColorRect child
 	# CanvasLayers need to stay visible to receive input
 	$ColorRect.hide()
@@ -34,7 +22,6 @@ func _ready() -> void:
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	save_button.pressed.connect(_on_save_pressed)
 	load_button.pressed.connect(_on_load_pressed)
-	print("PauseMenu buttons connected successfully")
 
 	_setup_inventory_ui()
 	_setup_save_load_ui()
@@ -45,7 +32,6 @@ func _process(_delta: float) -> void:
 	# Use Input polling instead of _input() event handling
 	# This is more reliable for autoloaded CanvasLayers
 	if Input.is_action_just_pressed("pause"):
-		print("Pause action detected via Input polling!")
 		if get_tree().paused:
 			_resume_game()
 		else:
@@ -108,12 +94,10 @@ func _setup_inventory_ui() -> void:
 		add_child(inventory_ui_instance)
 		inventory_ui_instance.process_mode = Node.PROCESS_MODE_ALWAYS
 		inventory_ui_instance.hide()
-		print("InventoryUI instantiated and added to PauseMenu")
 
 func _on_inventory_pressed() -> void:
-	print("Inventory button pressed!")
 	if inventory_ui_instance == null:
-		print("ERROR: inventory_ui_instance is null!")
+		push_error("PauseMenu: inventory_ui_instance is null!")
 		return
 
 	$ColorRect.hide()
@@ -133,12 +117,10 @@ func _setup_save_load_ui() -> void:
 		add_child(save_load_ui_instance)
 		save_load_ui_instance.process_mode = Node.PROCESS_MODE_ALWAYS
 		save_load_ui_instance.hide()
-		print("SaveLoadUI instantiated and added to PauseMenu")
 
 func _on_save_pressed() -> void:
-	print("Save button pressed!")
 	if save_load_ui_instance == null:
-		print("ERROR: save_load_ui_instance is null!")
+		push_error("PauseMenu: save_load_ui_instance is null!")
 		return
 
 	$ColorRect.hide()
@@ -147,9 +129,8 @@ func _on_save_pressed() -> void:
 		save_load_ui_instance.save_load_closed.connect(_on_save_load_closed)
 
 func _on_load_pressed() -> void:
-	print("Load button pressed!")
 	if save_load_ui_instance == null:
-		print("ERROR: save_load_ui_instance is null!")
+		push_error("PauseMenu: save_load_ui_instance is null!")
 		return
 
 	$ColorRect.hide()

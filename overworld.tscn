@@ -263,6 +263,7 @@
 [ext_resource type="Resource" uid="uid://cvxcsjomg6ips" path="res://data/Hubs/Stonegrove.tres" id="261_pyulv"]
 [ext_resource type="PackedScene" uid="uid://cu7jy8xv5xj0b" path="res://UI/HubMenuUI.tscn" id="262_hubmenu"]
 [ext_resource type="PackedScene" uid="uid://bxn5d8qv2mw5k" path="res://UI/MarketUI.tscn" id="263_marketui"]
+[ext_resource type="PackedScene" uid="uid://dr8k3m5y4qr9x" path="res://UI/RecruitmentUI.tscn" id="264_recruitmentui"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_6mg3q"]
 resource_local_to_scene = true
@@ -4393,20 +4394,24 @@ z_index = 100
 width = 5.0
 default_color = Color(0.8784314, 0.011764706, 0, 1)
 
-[node name="Oakmill" parent="." node_paths=PackedStringArray("hub_menu_ui", "market_ui") instance=ExtResource("258_7r4as")]
+[node name="Oakmill" parent="." node_paths=PackedStringArray("hub_menu_ui", "market_ui", "recruitment_ui") instance=ExtResource("258_7r4as")]
 position = Vector2(562.6665, 1986.6665)
 state = ExtResource("259_vu0qf")
 hub_menu_ui = NodePath("../UILayer/HubMenuUI")
 market_ui = NodePath("../UILayer/MarketUI")
+recruitment_ui = NodePath("../UILayer/RecruitmentUI")
 
-[node name="Stonegrove" parent="." node_paths=PackedStringArray("hub_menu_ui", "market_ui") instance=ExtResource("258_7r4as")]
+[node name="Stonegrove" parent="." node_paths=PackedStringArray("hub_menu_ui", "market_ui", "recruitment_ui") instance=ExtResource("258_7r4as")]
 position = Vector2(5968, 4281.3335)
 state = ExtResource("261_pyulv")
 hub_menu_ui = NodePath("../UILayer/HubMenuUI")
 market_ui = NodePath("../UILayer/MarketUI")
+recruitment_ui = NodePath("../UILayer/RecruitmentUI")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
 [node name="HubMenuUI" parent="UILayer" instance=ExtResource("262_hubmenu")]
 
 [node name="MarketUI" parent="UILayer" instance=ExtResource("263_marketui")]
+
+[node name="RecruitmentUI" parent="UILayer" instance=ExtResource("264_recruitmentui")]

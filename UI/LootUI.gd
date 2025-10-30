@@ -1,7 +1,7 @@
 extends Control
 class_name LootUI
 
-signal loot_closed(defeated_actor: Node2D)
+signal loot_closed(target_actor: Node2D)
 
 @onready var title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var player_name_label: Label = $MarginContainer/VBoxContainer/ContentContainer/LeftPanel/PlayerNameLabel
@@ -12,7 +12,7 @@ signal loot_closed(defeated_actor: Node2D)
 @onready var done_button: Button = $MarginContainer/VBoxContainer/FooterContainer/DoneButton
 
 var player_actor: Node2D = null
-var defeated_actor: Node2D = null
+var target_actor: Node2D = null
 
 var loot_cart: Dictionary = {}  # item_id -> quantity to take
 var last_clicked_item: StringName = StringName()
@@ -35,12 +35,15 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		_on_done_pressed()
 
-func open(player_ref: Node2D, defeated_ref: Node2D) -> void:
-	if player_ref == null or defeated_ref == null:
+func open(player_ref: Node2D, target_ref: Node2D) -> void:
+	if player_ref == null or target_ref == null:
 		return
 
 	player_actor = player_ref
-	defeated_actor = defeated_ref
+	target_actor = target_ref
+
+	if target_actor != null and target_actor.get("_is_paused") != null:
+		target_actor.set("_is_paused", true)
 
 	_clear_cart()
 	_populate_ui()
@@ -53,20 +56,23 @@ func open(player_ref: Node2D, defeated_ref: Node2D) -> void:
 func close_loot() -> void:
 	hide()
 
+	if target_actor != null and target_actor.get("_is_paused") != null:
+		target_actor.set("_is_paused", false)
+
 	var timekeeper: Node = get_node_or_null("/root/Timekeeper")
 	if timekeeper != null and timekeeper.has_method("resume"):
 		timekeeper.resume()
 
-	loot_closed.emit(defeated_actor)
+	loot_closed.emit(target_actor)
 	player_actor = null
-	defeated_actor = null
+	target_actor = null
 
 func _clear_cart() -> void:
 	loot_cart.clear()
 	last_clicked_item = StringName()
 
 func _populate_ui() -> void:
-	if player_actor == null or defeated_actor == null:
+	if player_actor == null or target_actor == null:
 		return
 
 	if title_label != null:
@@ -76,7 +82,7 @@ func _populate_ui() -> void:
 		player_name_label.text = player_actor.name
 
 	if defeated_name_label != null:
-		defeated_name_label.text = defeated_actor.name
+		defeated_name_label.text = target_actor.name
 
 	_populate_player_list()
 	_populate_defeated_list()
@@ -103,7 +109,7 @@ func _populate_player_list() -> void:
 			_create_player_item_row(item_id, stock)
 
 func _populate_defeated_list() -> void:
-	if defeated_item_list == null or defeated_actor == null:
+	if defeated_item_list == null or target_actor == null:
 		return
 
 	for child in defeated_item_list.get_children():
@@ -255,14 +261,14 @@ func _update_cart_for_item(item_id: StringName, new_qty: int) -> void:
 		qty_input.text = str(clamped_qty)
 
 func _get_defeated_inventory() -> Dictionary:
-	if defeated_actor == null:
+	if target_actor == null:
 		return {}
 
-	var inventory: Variant = defeated_actor.get("inventory")
+	var inventory: Variant = target_actor.get("inventory")
 	if inventory != null:
 		return inventory
 
-	var caravan_state: Variant = defeated_actor.get("caravan_state")
+	var caravan_state: Variant = target_actor.get("caravan_state")
 	if caravan_state != null and caravan_state.get("inventory") != null:
 		return caravan_state.inventory
 
@@ -288,37 +294,39 @@ func _on_take_all_pressed() -> void:
 	close_loot()
 
 func _on_done_pressed() -> void:
-	# Transfer items from defeated to player
+	# Transfer items from loot cart to player
 	for item_id in loot_cart.keys():
 		var amount: int = loot_cart.get(item_id, 0)
-		if amount > 0 and player_actor.has_method("add_item"):
-			if player_actor.add_item(item_id, amount):
-				_remove_from_defeated(item_id, amount)
+		if amount > 0:
+			_transfer_item_to_player(item_id, amount)
 
 	close_loot()
 
 func _remove_from_defeated(item_id: StringName, amount: int) -> void:
-	if defeated_actor == null:
+	if target_actor == null:
 		return
 
-	if defeated_actor.has_method("remove_item"):
-		defeated_actor.remove_item(item_id, amount)
+	if target_actor.has_method("remove_item"):
+		target_actor.remove_item(item_id, amount)
 	else:
-		var caravan_state: Variant = defeated_actor.get("caravan_state")
+		var caravan_state: Variant = target_actor.get("caravan_state")
 		if caravan_state != null and caravan_state.has_method("remove_item"):
 			caravan_state.remove_item(item_id, amount)
 
 func _transfer_item_to_player(item_id: StringName, amount: int) -> bool:
-	if player_actor == null or defeated_actor == null:
+	if player_actor == null or target_actor == null:
 		return false
 
 	if amount <= 0:
 		return false
 
-	if player_actor.has_method("add_item"):
-		if player_actor.add_item(item_id, amount):
-			_remove_from_defeated(item_id, amount)
-			return true
+	if not player_actor.has_method("add_item"):
+		return false
+
+	var success: bool = player_actor.add_item(item_id, amount)
+	if success:
+		_remove_from_defeated(item_id, amount)
+		return true
 
 	return false
 

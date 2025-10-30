@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TroopType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/TroopType.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+troop_name = "Wraith Operative"
+description = "A phase-shifting marksman with a singularity cannon. Annihilates targets but cannot survive direct fire."
+recruitment_cost = 750
+health_bonus = 5
+damage_bonus = 40
+defense_bonus = 5

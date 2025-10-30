@@ -74,6 +74,37 @@ unique_name_in_owner = true
 layout_mode = 2
 accessibility_name = "CharacterLevel"
 
+[node name="CombatStatsContainer" type="HBoxContainer" parent="Panel/MainLayoutContainer/ContentBox"]
+layout_mode = 2
+accessibility_name = "CombatStatsContainer"
+theme_override_constants/separation = 10
+
+[node name="HealthStat" type="Label" parent="Panel/MainLayoutContainer/ContentBox/CombatStatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+text = "❤️ 0"
+
+[node name="Separator1" type="Label" parent="Panel/MainLayoutContainer/ContentBox/CombatStatsContainer"]
+layout_mode = 2
+text = "|"
+
+[node name="DamageStat" type="Label" parent="Panel/MainLayoutContainer/ContentBox/CombatStatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+text = "⚔️ 0"
+
+[node name="Separator2" type="Label" parent="Panel/MainLayoutContainer/ContentBox/CombatStatsContainer"]
+layout_mode = 2
+text = "|"
+
+[node name="DefenseStat" type="Label" parent="Panel/MainLayoutContainer/ContentBox/CombatStatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+text = "🛡️ 0"
+
 [node name="HSeparator" type="HSeparator" parent="Panel/MainLayoutContainer/ContentBox"]
 layout_mode = 2
 accessibility_name = "Seperater of labels"

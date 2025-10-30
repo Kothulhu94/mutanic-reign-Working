@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TroopType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/TroopType.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+troop_name = "Bastion Titan"
+description = "Pilot of a mobile shield-projection mech. Creates an impenetrable wall for the frontline."
+recruitment_cost = 750
+health_bonus = 10
+damage_bonus = 5
+defense_bonus = 35

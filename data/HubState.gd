@@ -10,6 +10,9 @@ class_name HubStates
 # Inventory: item -> count (ints). You can swap to floats later if needed.
 @export var inventory: Dictionary = {}
 
+# Troop stock: troop_id -> available count for recruitment
+@export var troop_stock: Dictionary = {}
+
 # Population state
 @export var base_population_cap: int = 100
 

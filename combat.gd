@@ -38,3 +38,51 @@ func resolve_combat_round(actor_a: Node2D, actor_b: Node2D) -> void:
 
 	a_sheet.apply_damage(damage_to_a)
 	b_sheet.apply_damage(damage_to_b)
+
+	_calculate_troop_losses(a_sheet, actor_a.name)
+	_calculate_troop_losses(b_sheet, actor_b.name)
+
+## Calculates and applies troop losses based on health percentage remaining
+func _calculate_troop_losses(sheet: CharacterSheet, actor_name: String) -> void:
+	if sheet == null:
+		return
+
+	var max_health: int = sheet.get_effective_health()
+	var current_health: int = sheet.current_health
+
+	if max_health <= 0:
+		return
+
+	var health_percent: float = float(current_health) / float(max_health)
+
+	var loss_chance: float = 0.0
+	if health_percent > 0.67:
+		loss_chance = 0.1
+	elif health_percent > 0.34:
+		loss_chance = 0.4
+	else:
+		loss_chance = 0.75
+
+	var troops_to_remove: Array[Dictionary] = []
+
+	for troop_id: StringName in sheet.troop_inventory.keys():
+		var count: int = sheet.troop_inventory.get(troop_id, 0)
+
+		for i: int in range(count):
+			if randf() < loss_chance:
+				var found: bool = false
+				for entry: Dictionary in troops_to_remove:
+					if entry.get("troop_id") == troop_id:
+						entry["amount"] = int(entry.get("amount", 0)) + 1
+						found = true
+						break
+
+				if not found:
+					troops_to_remove.append({"troop_id": troop_id, "amount": 1})
+
+	for entry: Dictionary in troops_to_remove:
+		var troop_id: StringName = entry.get("troop_id", StringName())
+		var amount: int = int(entry.get("amount", 0))
+
+		if amount > 0:
+			sheet.remove_troop(troop_id, amount)
