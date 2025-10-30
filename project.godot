@@ -26,6 +26,7 @@ PauseMenu="*res://UI/PauseMenu.tscn"
 CombatManager="*res://combat.gd"
 SaveManager="*res://singletons/SaveManager.gd"
 TroopDatabase="*res://data/TroopDatabase.gd"
+Skills="*res://Autoloads/Skills.gd"
 
 [dialogic]
 

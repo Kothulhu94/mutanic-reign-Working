@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c7oy4t1n3vwxz"]
+[gd_scene load_steps=2 format=3 uid="uid://c7oy4t1n3vwx0"]
 
 [ext_resource type="Script" path="res://Buildings/GemMine.gd" id="1_gemin"]
 

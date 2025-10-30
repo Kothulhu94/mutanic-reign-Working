@@ -5,8 +5,8 @@
 [ext_resource type="Resource" path="res://data/Skills/Trading/CaravanLogistics.tres" id="3"]
 [ext_resource type="Resource" path="res://data/Skills/Trading/NegotiationTactics.tres" id="4"]
 [ext_resource type="Resource" path="res://data/Skills/Trading/MarketMonopoly.tres" id="5"]
-[ext_resource type="Resource" path="res://data/Skills/Trading/TradeNetworks.tres" id="6"]
-[ext_resource type="Resource" path="res://data/Skills/Trading/CompanionMerchants.tres" id="7"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/EstablishedRoutes.tres" id="6"]
+[ext_resource type="Resource" path="res://data/Skills/Trading/MasterMerchant.tres" id="7"]
 [ext_resource type="Resource" path="res://data/Skills/Trading/EconomicDominance.tres" id="8"]
 
 [resource]

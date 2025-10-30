@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemDef" load_steps=2 format=3 uid="uid://b9f3g6t1swz01"]
+[gd_resource type="Resource" script_class="ItemDef" load_steps=2 format=3 uid="uid://caf3g6t1sw001"]
 
 [ext_resource type="Script" uid="uid://s1txlrx5unui" path="res://data/Items/ItemDef.gd" id="1_mdgel"]
 

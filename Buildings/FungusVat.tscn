@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b2jx9n6m8qrsw"]
+[gd_scene load_steps=2 format=3 uid="uid://b2jyan6m8qrsw"]
 
 [ext_resource type="Script" path="res://Buildings/FungusVat.gd" id="1_fungi"]
 

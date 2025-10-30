@@ -17,6 +17,11 @@ var money: int = 1000
 var _health_visual: Control
 var _chase_target: Node2D = null
 const ENCOUNTER_DISTANCE: float = 60.0
+
+# Trading skill tracking
+var _trade_session_value: float = 0.0  # Total PACs traded in current session
+var _hubs_traded_at: Dictionary = {}  # hub_name -> trade_count
+var _last_wealth_check: int = 0  # For EconomicDominance tracking
 ## Checks if a specific amount of an item can be added without exceeding limits.
 func can_add_item(item_id: StringName, amount: int) -> bool:
 	if amount <= 0:
@@ -82,6 +87,9 @@ func remove_item(item_id: StringName, amount: int) -> bool:
 func _ready() -> void:
 	charactersheet = CharacterSheet.new()
 	charactersheet.initialize_health()
+
+	# Initialize Trading skills
+	_initialize_trading_skills()
 
 	# Create and add health visual
 	var health_visual_scene: PackedScene = preload("res://UI/ActorHealthVisual.tscn")
@@ -151,3 +159,86 @@ func chase_target(target: Node2D) -> void:
 ## Returns the current chase target, or null if not chasing
 func get_chase_target() -> Node2D:
 	return _chase_target
+
+## Award XP to a skill based on transaction value (1 XP per 100 PACs)
+func award_skill_xp(skill_id: StringName, value: float) -> void:
+	if charactersheet == null:
+		return
+
+	var skill_spec: SkillSpec = charactersheet.get_skill_spec(skill_id)
+	if skill_spec == null:
+		return
+
+	# Load the skill definition
+	var skill_def: Skill = Skills.get_skill(skill_id)
+	if skill_def == null:
+		return
+
+	# Calculate XP: 1 XP per 100 PACs
+	var xp_amount: float = value / 100.0
+	if xp_amount > 0.0:
+		# Update the SkillSpec's runtime values
+		skill_spec.current_xp += xp_amount
+
+		# Check for rank-up
+		while skill_spec.current_rank < skill_def.max_rank:
+			var xp_needed: int = skill_def.get_xp_for_rank(skill_spec.current_rank + 1)
+			if xp_needed <= 0 or skill_spec.current_xp < float(xp_needed):
+				break
+			# Rank up
+			skill_spec.current_xp -= float(xp_needed)
+			skill_spec.current_rank += 1
+
+## Track a trade transaction for session-based XP awards
+func track_trade_transaction(hub_name: String, transaction_value: float) -> void:
+	# Accumulate total trading volume for CaravanLogistics
+	_trade_session_value += transaction_value
+
+	# Track which hubs we've traded at for EstablishedRoutes
+	_hubs_traded_at[hub_name] = _hubs_traded_at.get(hub_name, 0) + 1
+
+## Finalize trading session and award session-based XP
+func finalize_trade_session(hub_name: String) -> void:
+	# Award CaravanLogistics XP based on total trading volume this session
+	if _trade_session_value > 0.0:
+		award_skill_xp(&"caravan_logistics", _trade_session_value)
+
+	# Award EstablishedRoutes XP for trading at established hubs (2+ visits)
+	var trade_count: int = _hubs_traded_at.get(hub_name, 0)
+	if trade_count >= 2:
+		# Bonus XP for repeat trading at same hub (building relationships)
+		award_skill_xp(&"established_routes", _trade_session_value * 0.5)
+
+	# Award EconomicDominance XP when wealth increases significantly
+	var current_wealth: int = money
+	if current_wealth > _last_wealth_check + 1000:
+		var wealth_gain: float = float(current_wealth - _last_wealth_check)
+		award_skill_xp(&"economic_dominance", wealth_gain)
+		_last_wealth_check = current_wealth
+	elif current_wealth > 1000 and _last_wealth_check == 0:
+		# First time exceeding 1000 PACs
+		award_skill_xp(&"economic_dominance", float(current_wealth))
+		_last_wealth_check = current_wealth
+
+	# Reset session tracking
+	_trade_session_value = 0.0
+
+## Initialize all Trading domain skills for this bus
+func _initialize_trading_skills() -> void:
+	if charactersheet == null:
+		push_error("Bus._initialize_trading_skills: CharacterSheet is null")
+		return
+
+	# Add all 7 Trading skills at rank 1
+	var trading_skills: Array[StringName] = [
+		&"market_analysis",
+		&"caravan_logistics",
+		&"negotiation_tactics",
+		&"market_monopoly",
+		&"established_routes",
+		&"master_merchant",
+		&"economic_dominance"
+	]
+
+	for skill_id: StringName in trading_skills:
+		charactersheet.add_skill(skill_id, Skills.database)

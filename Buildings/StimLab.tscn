@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b0g7v4w6yz090"]
+[gd_scene load_steps=2 format=3 uid="uid://b0g7v4w6y01a0"]
 
 [ext_resource type="Script" path="res://Buildings/StimLab.gd" id="1_stmlb"]
 

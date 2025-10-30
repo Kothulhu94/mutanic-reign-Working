@@ -338,6 +338,11 @@ func _on_market_opened() -> void:
 func _on_market_closed() -> void:
 	# Only respond if this hub was the one that opened the market
 	if market_ui != null and market_ui.current_hub == self:
+		# Finalize trading session for XP awards
+		var bus_ref: Bus = _get_bus_from_scene_tree()
+		if bus_ref != null and bus_ref.has_method("finalize_trade_session"):
+			bus_ref.finalize_trade_session(name)
+
 		# Market closed, game resumed automatically by MarketUI
 		pass
 
@@ -393,6 +398,14 @@ func _on_transaction_confirmed(cart: Array[Dictionary]) -> void:
 			bus_ref.money -= cost
 			state.money += cost
 
+			# Award XP for market_analysis (trading_goods)
+			if bus_ref.has_method("award_skill_xp"):
+				bus_ref.award_skill_xp(&"market_analysis", float(cost))
+
+			# Track transaction for session-based XP
+			if bus_ref.has_method("track_trade_transaction"):
+				bus_ref.track_trade_transaction(name, float(cost))
+
 		if sell_qty > 0:
 			var revenue: int = int(floor(float(sell_qty) * unit_price))
 
@@ -409,6 +422,24 @@ func _on_transaction_confirmed(cart: Array[Dictionary]) -> void:
 
 			bus_ref.money += revenue
 			state.money -= revenue
+
+			# Award XP for market_analysis (trading_goods)
+			if bus_ref.has_method("award_skill_xp"):
+				bus_ref.award_skill_xp(&"market_analysis", float(revenue))
+
+				# Award XP for negotiation_tactics (negotiating_deals)
+				bus_ref.award_skill_xp(&"negotiation_tactics", float(revenue))
+
+				# Award XP for master_merchant (profitable_trade_completed)
+				bus_ref.award_skill_xp(&"master_merchant", float(revenue))
+
+				# Award XP for market_monopoly (controlling_markets) when selling >50 units
+				if sell_qty > 50:
+					bus_ref.award_skill_xp(&"market_monopoly", float(revenue))
+
+			# Track transaction for session-based XP
+			if bus_ref.has_method("track_trade_transaction"):
+				bus_ref.track_trade_transaction(name, float(revenue))
 
 func _on_recruitment_opened() -> void:
 	# Only respond if this hub was the one that opened the menu

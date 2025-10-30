@@ -85,6 +85,9 @@ func setup(home: Hub, state: CaravanState, db: ItemDB, hubs: Array[Hub]) -> void
 	if caravan_state != null and caravan_state.leader_sheet != null:
 		caravan_state.leader_sheet.initialize_health()
 
+		# Initialize Trading skills
+		_initialize_trading_skills()
+
 		# Set up health visual
 		var health_visual_scene: PackedScene = preload("res://UI/ActorHealthVisual.tscn")
 		_health_visual = health_visual_scene.instantiate() as Control
@@ -159,7 +162,7 @@ func _state_buying_at_home() -> void:
 		var price: float = home_hub.get_item_price(item_id)
 		var max_affordable: int = int(floor(float(caravan_state.money) / price))
 		var amount_to_buy: int = mini(available, max_affordable)
-		amount_to_buy = mini(amount_to_buy, caravan_state.get_max_capacity() - caravan_state.get_total_cargo_weight())
+		amount_to_buy = mini(amount_to_buy, _get_effective_max_capacity() - caravan_state.get_total_cargo_weight())
 
 		if amount_to_buy > 0:
 			var total_cost: int = int(ceil(price * float(amount_to_buy)))
@@ -168,6 +171,9 @@ func _state_buying_at_home() -> void:
 				caravan_state.add_item(item_id, amount_to_buy)
 				purchase_prices[item_id] = price
 				_total_bought += amount_to_buy
+
+				# Award XP for market_analysis (trading_goods)
+				_award_skill_xp(&"market_analysis", float(total_cost))
 
 	# Find a destination hub
 	if caravan_state.inventory.size() > 0:
@@ -239,9 +245,24 @@ func _state_selling() -> void:
 			if amount > 0:
 				var revenue: int = int(floor(sell_price * float(amount)))
 				if current_target_hub.sell_to_hub(item_id, amount, caravan_state):
+					var profit: int = revenue - int(purchase_price * float(amount))
 					caravan_state.money += revenue
-					caravan_state.profit_this_trip += revenue - int(purchase_price * float(amount))
+					caravan_state.profit_this_trip += profit
 					caravan_state.remove_item(item_id, amount)
+
+					# Award XP for market_analysis (trading_goods)
+					_award_skill_xp(&"market_analysis", float(revenue))
+
+					# Award XP for negotiation_tactics (negotiating_deals)
+					_award_skill_xp(&"negotiation_tactics", float(profit))
+
+					# Award XP for master_merchant (profitable_trade_completed)
+					_award_skill_xp(&"master_merchant", float(profit))
+
+					# Award XP for market_monopoly (controlling_markets)
+					# When selling >50 units (representing market dominance)
+					if amount > 50:
+						_award_skill_xp(&"market_monopoly", float(revenue))
 
 	# Mark this hub as visited
 	if not visited_hubs.has(current_target_hub):
@@ -352,6 +373,22 @@ func _find_next_destination() -> void:
 		current_target_hub = available_hubs[0]
 
 func _arrive_at_home() -> void:
+	# Calculate total trip value before paying tax
+	var trip_profit: int = caravan_state.profit_this_trip
+
+	# Award XP for established_routes (trade_route_completed)
+	# Based on total value of the completed route
+	var route_value: float = float(caravan_state.money + trip_profit)
+	_award_skill_xp(&"established_routes", route_value)
+
+	# Award XP for caravan_logistics (managing_caravans)
+	# Based on route management efficiency
+	_award_skill_xp(&"caravan_logistics", route_value)
+
+	# Award XP for economic_dominance if profit > 1000 PACs
+	if trip_profit > 1000:
+		_award_skill_xp(&"economic_dominance", float(trip_profit))
+
 	# Pay 10% tax on carried money
 	if caravan_state.money > 0:
 		var tax: int = int(ceil(float(caravan_state.money) * home_tax_rate))
@@ -370,6 +407,14 @@ func _arrive_at_home() -> void:
 # ============================================================
 # Skill Effects Application
 # ============================================================
+## Get effective max capacity with all skill bonuses applied
+func _get_effective_max_capacity() -> int:
+	if caravan_state == null or caravan_state.caravan_type == null:
+		return 1000
+
+	var base: int = caravan_state.caravan_type.base_capacity
+	return int(float(base) * (1.0 + _capacity_bonus))
+
 ## Apply all relevant Trading skill bonuses from leader's character sheet
 func _apply_skill_bonuses() -> void:
 	if caravan_state == null or caravan_state.leader_sheet == null:
@@ -377,23 +422,65 @@ func _apply_skill_bonuses() -> void:
 
 	var sheet: CharacterSheet = caravan_state.leader_sheet
 
-	# Apply NegotiationTactics skill (affects trade prices)
-	var negotiation_rank: int = sheet.get_skill_rank(&"negotiation_tactics")
-	if negotiation_rank > 0:
-		# Simplified: 1.5% better prices per rank
-		# Full implementation would read base_effect_per_rank from SkillDatabase
-		_price_modifier_bonus = float(negotiation_rank) * 0.015
+	# Reset bonuses
+	_price_modifier_bonus = 0.0
+	_speed_bonus = 0.0
+	_capacity_bonus = 0.0
+	var base_movement_speed: float = movement_speed
 
-	# Apply CaravanLogistics skill (affects speed + capacity)
-	var logistics_rank: int = sheet.get_skill_rank(&"caravan_logistics")
-	if logistics_rank > 0:
-		# Simplified: 2.5% per rank (actual skill: 25-45% across ranks 1-10)
-		var logistics_bonus: float = float(logistics_rank) * 0.025
-		_speed_bonus = logistics_bonus
-		_capacity_bonus = logistics_bonus
+	# Reset movement speed to base (from CaravanType)
+	if caravan_state.caravan_type != null:
+		movement_speed = 100.0 * caravan_state.caravan_type.speed_modifier
+		base_movement_speed = movement_speed
 
-		# Apply speed bonus to movement_speed
-		movement_speed *= (1.0 + _speed_bonus)
+	# Apply NegotiationTactics skill (trade_price_bonus)
+	var negotiation_spec: SkillSpec = sheet.get_skill_spec(&"negotiation_tactics")
+	if negotiation_spec != null and negotiation_spec.current_rank > 0:
+		var negotiation_skill: Skill = Skills.get_skill(&"negotiation_tactics")
+		if negotiation_skill != null:
+			_price_modifier_bonus = negotiation_skill.get_effect_at_rank(negotiation_spec.current_rank)
+
+	# Apply MasterMerchant skill (trade_price_bonus) - stacks with NegotiationTactics
+	var merchant_spec: SkillSpec = sheet.get_skill_spec(&"master_merchant")
+	if merchant_spec != null and merchant_spec.current_rank > 0:
+		var merchant_skill: Skill = Skills.get_skill(&"master_merchant")
+		if merchant_skill != null:
+			_price_modifier_bonus += merchant_skill.get_effect_at_rank(merchant_spec.current_rank)
+
+	# Apply CaravanLogistics skill (caravan_efficiency: speed + capacity)
+	var logistics_spec: SkillSpec = sheet.get_skill_spec(&"caravan_logistics")
+	if logistics_spec != null and logistics_spec.current_rank > 0:
+		var logistics_skill: Skill = Skills.get_skill(&"caravan_logistics")
+		if logistics_skill != null:
+			var logistics_bonus: float = logistics_skill.get_effect_at_rank(logistics_spec.current_rank)
+			_speed_bonus = logistics_bonus
+			_capacity_bonus = logistics_bonus
+
+	# Apply EstablishedRoutes skill (caravan_inventory_bonus)
+	var routes_spec: SkillSpec = sheet.get_skill_spec(&"established_routes")
+	if routes_spec != null and routes_spec.current_rank > 0:
+		var routes_skill: Skill = Skills.get_skill(&"established_routes")
+		if routes_skill != null:
+			_capacity_bonus += routes_skill.get_effect_at_rank(routes_spec.current_rank)
+
+	# Apply EconomicDominance skill (NPC secondary effect: +100% price, +50% speed, +50% capacity)
+	var dominance_spec: SkillSpec = sheet.get_skill_spec(&"economic_dominance")
+	if dominance_spec != null and dominance_spec.current_rank > 0:
+		# NPC-specific bonuses for this Tier 3 skill
+		_price_modifier_bonus += 1.0  # +100% better prices
+		_speed_bonus += 0.5           # +50% speed
+		_capacity_bonus += 0.5        # +50% capacity
+
+	# Apply MarketMonopoly skill (NPC secondary effect: +40% price bonus)
+	var monopoly_spec: SkillSpec = sheet.get_skill_spec(&"market_monopoly")
+	if monopoly_spec != null and monopoly_spec.current_rank > 0:
+		# NPC-specific bonus
+		_price_modifier_bonus += 0.4  # +40% better prices
+
+	# Apply final bonuses
+	movement_speed = base_movement_speed * (1.0 + _speed_bonus)
+	if nav_agent != null:
+		nav_agent.max_speed = movement_speed
 
 # ============================================================
 # Navigation
@@ -438,3 +525,61 @@ func _on_timekeeper_paused() -> void:
 
 func _on_timekeeper_resumed() -> void:
 	_is_paused = false
+
+# ============================================================
+# Trading Skills XP System
+# ============================================================
+## Award XP to a skill based on transaction value (1 XP per 100 PACs)
+func _award_skill_xp(skill_id: StringName, value: float) -> void:
+	if caravan_state == null or caravan_state.leader_sheet == null:
+		return
+
+	var skill_spec: SkillSpec = caravan_state.leader_sheet.get_skill_spec(skill_id)
+	if skill_spec == null:
+		return
+
+	# Load the skill definition to call add_xp
+	var skill_def: Skill = Skills.get_skill(skill_id)
+	if skill_def == null:
+		return
+
+	# Calculate XP: 1 XP per 100 PACs
+	var xp_amount: float = value / 100.0
+	if xp_amount > 0.0:
+		# Update the SkillSpec's runtime values
+		skill_spec.current_xp += xp_amount
+
+		# Check for rank-up
+		while skill_spec.current_rank < skill_def.max_rank:
+			var xp_needed: int = skill_def.get_xp_for_rank(skill_spec.current_rank + 1)
+			if xp_needed <= 0 or skill_spec.current_xp < float(xp_needed):
+				break
+			# Rank up
+			skill_spec.current_xp -= float(xp_needed)
+			skill_spec.current_rank += 1
+
+			# Recalculate bonuses when skills rank up
+			_apply_skill_bonuses()
+
+# ============================================================
+# Trading Skills Initialization
+# ============================================================
+## Initialize all Trading domain skills for this caravan's leader
+func _initialize_trading_skills() -> void:
+	if caravan_state == null or caravan_state.leader_sheet == null:
+		push_error("Caravan._initialize_trading_skills: No leader sheet available")
+		return
+
+	# Add all 7 Trading skills at rank 1
+	var trading_skills: Array[StringName] = [
+		&"market_analysis",
+		&"caravan_logistics",
+		&"negotiation_tactics",
+		&"market_monopoly",
+		&"established_routes",
+		&"master_merchant",
+		&"economic_dominance"
+	]
+
+	for skill_id: StringName in trading_skills:
+		caravan_state.leader_sheet.add_skill(skill_id, Skills.database)

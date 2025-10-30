@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b5mw2r9n1tuzx"]
+[gd_scene load_steps=2 format=3 uid="uid://b5mw2san1tu0x"]
 
 [ext_resource type="Script" path="res://Buildings/LichenFarm.gd" id="1_lich"]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c1h8w5x7z0a01"]
+[gd_scene load_steps=2 format=3 uid="uid://c1h8w5x700a01"]
 
 [ext_resource type="Script" path="res://Buildings/TextileMill.gd" id="1_txtmil"]
 

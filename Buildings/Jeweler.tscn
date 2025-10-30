@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3j0y7z9b2c23"]
+[gd_scene load_steps=2 format=3 uid="uid://b3j0y71ab2c23"]
 
 [ext_resource type="Script" path="res://Buildings/Jeweler.gd" id="1_jwlr"]
 

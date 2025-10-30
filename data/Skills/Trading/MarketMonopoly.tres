@@ -6,7 +6,7 @@
 script = ExtResource("1")
 skill_id = &"market_monopoly"
 display_name = "Market Monopoly"
-description = "Control market prices by ±30% through market manipulation."
+description = "Control market prices by ±30% through monopolization. NPC traders with this skill gain improved buy/sell rates."
 domain_id = &"Trading"
 tier = 2
 max_rank = 10

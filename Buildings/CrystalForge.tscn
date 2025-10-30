@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c5b2q9r1tuv45"]
+[gd_scene load_steps=2 format=3 uid="uid://c5b2rar1tuv45"]
 
 [ext_resource type="Script" path="res://Buildings/CrystalForge.gd" id="1_crfrg"]
 

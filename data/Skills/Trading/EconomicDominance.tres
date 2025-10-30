@@ -6,7 +6,7 @@
 script = ExtResource("1")
 skill_id = &"economic_dominance"
 display_name = "Economic Dominance"
-description = "Increase all income by +50% and gain monopoly control over regional markets."
+description = "Increase all income by +50%. NPC caravans with this skill gain superior speed, inventory capacity, and trade rates."
 domain_id = &"Trading"
 tier = 3
 max_rank = 10
@@ -26,5 +26,5 @@ effect_multiplier_per_rank = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 xp_trigger = &"economic_mastery"
 xp_trigger_description = "Gain XP through sustained economic dominance"
 uses_difficulty_multiplier = true
-prerequisite_skill_ids = [&"market_monopoly", &"trade_networks"]
+prerequisite_skill_ids = [&"market_monopoly", &"established_routes"]
 unlocks_system = "market_monopoly"

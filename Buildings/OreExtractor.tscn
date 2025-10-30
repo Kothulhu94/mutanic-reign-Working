@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c4lz1q8m0stvy"]
+[gd_scene load_steps=2 format=3 uid="uid://c4l01q8m0stvy"]
 
 [ext_resource type="Script" path="res://Buildings/OreExtractor.gd" id="1_orext"]
 

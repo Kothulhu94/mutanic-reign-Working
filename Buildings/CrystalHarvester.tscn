@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://d3ky0p7n9rsux"]
+[gd_scene load_steps=2 format=3 uid="uid://d3ky0p7oarsux"]
 
 [ext_resource type="Script" path="res://Buildings/CrystalHarvester.gd" id="1_cryst"]
 
