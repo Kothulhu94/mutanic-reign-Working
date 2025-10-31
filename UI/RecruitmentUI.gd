@@ -7,7 +7,7 @@ signal recruitment_closed()
 
 @onready var title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var player_info_label: Label = $MarginContainer/VBoxContainer/PlayerInfoContainer/PlayerInfoLabel
-@onready var troop_list: VBoxContainer = $MarginContainer/VBoxContainer/ScrollContainer/TroopList
+@onready var troop_list: GridContainer = $MarginContainer/VBoxContainer/ScrollContainer/TroopList
 @onready var total_cost_label: Label = $MarginContainer/VBoxContainer/FooterContainer/TotalCostLabel
 @onready var confirm_button: Button = $MarginContainer/VBoxContainer/FooterContainer/ConfirmButton
 @onready var cancel_button: Button = $MarginContainer/VBoxContainer/FooterContainer/CancelButton
@@ -106,6 +106,10 @@ func _populate_troop_list() -> void:
 	var all_troop_ids: Array[StringName] = troop_db.get_all_troop_ids()
 
 	for troop_id: StringName in all_troop_ids:
+		var hub_stock: int = _get_hub_stock(troop_id)
+		if hub_stock <= 0:
+			continue
+
 		var troop_type: TroopType = troop_db.get_troop(troop_id)
 		if troop_type != null:
 			_create_troop_row(troop_id, troop_type)

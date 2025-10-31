@@ -10,6 +10,7 @@ var item_db: ItemDB
 var _hunger_timer_accum: float = 0.0
 var _infra_timer_accum: float = 0.0
 var _medical_timer_accum: float = 0.0
+var _luxury_timer_accum: float = 0.0
 
 func setup(p_config: EconomyConfig, p_item_db: ItemDB) -> void:
 	config = p_config
@@ -21,6 +22,7 @@ func tick(dt: float, cap: int, int_inv: Dictionary, float_inv: Dictionary, build
 		"food_level": 0.0,
 		"infrastructure_level": 0.0,
 		"medical_level": 0.0,
+		"luxury_level": 0.0,
 		"consumed": {},
 		"produced": {},
 	}
@@ -105,17 +107,32 @@ func tick(dt: float, cap: int, int_inv: Dictionary, float_inv: Dictionary, build
 				_accum(telemetry_consumed, idm, -vm)
 
 	# -------------------------
-	# 6) Snapshots
+	# 6) Luxury consumption (cadence)
+	# -------------------------
+	if item_db != null:
+		var luxury_total: Dictionary = _update_luxury_consumption(dt, cap, working)
+		InventoryUtil.merge_delta(total_delta, luxury_total)
+		for k in luxury_total.keys():
+			var idl: StringName = (k if k is StringName else StringName(str(k)))
+			var vl: float = float(luxury_total[k]) # negative
+			working[idl] = float(working.get(idl, 0.0)) + vl
+			if vl < 0.0:
+				_accum(telemetry_consumed, idl, -vl)
+
+	# -------------------------
+	# 7) Snapshots
 	# -------------------------
 	var food_level_now: float = _compute_food_level_snapshot(cap, working)
 	var infrastructure_level_now: float = _compute_infrastructure_level_snapshot(buildings, working)
 	var medical_level_now: float = _compute_medical_level_snapshot(cap, working)
+	var luxury_level_now: float = _compute_luxury_level_snapshot(cap, working)
 
 	# Package results
 	result["delta"] = total_delta
 	result["food_level"] = food_level_now
 	result["infrastructure_level"] = infrastructure_level_now
 	result["medical_level"] = medical_level_now
+	result["luxury_level"] = luxury_level_now
 	result["consumed"] = telemetry_consumed
 	result["produced"] = telemetry_produced
 	return result
@@ -443,6 +460,107 @@ func _medical_units_available_in(working: Dictionary) -> float:
 	return units
 
 func _units_to_medical_taken(d: Dictionary, units_per_point: float) -> float:
+	var units_total: float = 0.0
+	for v in d.values():
+		if float(v) < 0.0:
+			units_total += -float(v)
+	return units_total / max(0.0001, units_per_point)
+
+# ============================================================
+# Luxury Consumption (cadence + one-tick consume)
+# ============================================================
+func _update_luxury_consumption(dt: float, cap: int, working: Dictionary) -> Dictionary:
+	_luxury_timer_accum += dt
+	var total: Dictionary = {}
+	while _luxury_timer_accum >= config.luxury_tick_interval:
+		_luxury_timer_accum -= config.luxury_tick_interval
+		var d: Dictionary = _consume_one_luxury_tick(cap, working)
+		InventoryUtil.merge_delta(total, d)
+		for k in d.keys():
+			var id: StringName = (k if k is StringName else StringName(str(k)))
+			working[id] = float(working.get(id, 0.0)) + float(d[k])
+	return total
+
+func _consume_one_luxury_tick(cap: int, working: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	if item_db == null:
+		return out
+
+	var units_needed: float = (float(cap) / 10.0) * config.luxury_units_per_10_pops
+	if units_needed <= 0.0:
+		return out
+
+	var luxury_good_items: Array[StringName] = []
+	var processed_items: Array[StringName] = []
+	var ingredient_items: Array[StringName] = []
+
+	for k in working.keys():
+		var id: StringName = (k if k is StringName else StringName(str(k)))
+		var units: float = float(working.get(k, 0.0))
+		if units <= 0.0:
+			continue
+		if not item_db.has_tag(id, &"luxury"):
+			continue
+		if item_db.has_tag(id, &"luxury_good"):
+			luxury_good_items.append(id)
+		elif item_db.has_tag(id, &"processed"):
+			processed_items.append(id)
+		else:
+			ingredient_items.append(id)
+
+	var remain_units: float = units_needed
+
+	# Luxury Good → Processed → Ingredient
+	if remain_units > 0.0 and luxury_good_items.size() > 0:
+		var units_lux: float = remain_units * config.luxury_cost_luxury_good
+		var d_lux: Dictionary = _consume_units_from_items(luxury_good_items, units_lux, working)
+		InventoryUtil.merge_delta(out, d_lux)
+		remain_units -= _units_to_luxury_taken(d_lux, config.luxury_cost_luxury_good)
+
+	if remain_units > 0.0 and processed_items.size() > 0:
+		var units_proc: float = remain_units * config.luxury_cost_processed
+		var d_proc: Dictionary = _consume_units_from_items(processed_items, units_proc, working)
+		InventoryUtil.merge_delta(out, d_proc)
+		remain_units -= _units_to_luxury_taken(d_proc, config.luxury_cost_processed)
+
+	if remain_units > 0.0 and ingredient_items.size() > 0:
+		var units_ing: float = remain_units * config.luxury_cost_ingredient
+		var d_ing: Dictionary = _consume_units_from_items(ingredient_items, units_ing, working)
+		InventoryUtil.merge_delta(out, d_ing)
+		remain_units -= _units_to_luxury_taken(d_ing, config.luxury_cost_ingredient)
+
+	return out
+
+# ------------------------------------------------------------
+# Luxury-level snapshot (units)
+# ------------------------------------------------------------
+func _compute_luxury_level_snapshot(cap: int, working: Dictionary) -> float:
+	if item_db == null:
+		return 0.0
+	var need: float = (float(cap) / 10.0) * config.luxury_units_per_10_pops
+	var have: float = _luxury_units_available_in(working)
+	return have - need
+
+func _luxury_units_available_in(working: Dictionary) -> float:
+	if item_db == null:
+		return 0.0
+	var units: float = 0.0
+	for k in working.keys():
+		var id: StringName = (k if k is StringName else StringName(str(k)))
+		var amount: float = float(working.get(k, 0.0))
+		if amount <= 0.0:
+			continue
+		if not item_db.has_tag(id, &"luxury"):
+			continue
+		if item_db.has_tag(id, &"luxury_good"):
+			units += amount / max(0.0001, config.luxury_cost_luxury_good)
+		elif item_db.has_tag(id, &"processed"):
+			units += amount / max(0.0001, config.luxury_cost_processed)
+		else:
+			units += amount / max(0.0001, config.luxury_cost_ingredient)
+	return units
+
+func _units_to_luxury_taken(d: Dictionary, units_per_point: float) -> float:
 	var units_total: float = 0.0
 	for v in d.values():
 		if float(v) < 0.0:

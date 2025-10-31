@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Sniper"
 description = "A long-range specialist with a railgun. Lightly armored."
+tier = 2
+archetype = "Striker"
 recruitment_cost = 100
 health_bonus = 2
 damage_bonus = 7

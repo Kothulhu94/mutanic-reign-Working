@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Shieldbearer"
 description = "Carries a large wooden shield and little else."
+tier = 1
+archetype = "Defender"
 recruitment_cost = 10
 health_bonus = 0
 damage_bonus = 0

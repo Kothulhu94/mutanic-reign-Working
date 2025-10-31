@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Recruit"
 description = "A villager with a bit of training and a spear."
+tier = 1
+archetype = "Balanced"
 recruitment_cost = 10
 health_bonus = 1
 damage_bonus = 1

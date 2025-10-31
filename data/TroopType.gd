@@ -10,6 +10,12 @@ class_name TroopType
 ## Description of the troop
 @export_multiline var description: String = ""
 
+## Tier of the troop (1-4)
+@export var tier: int = 1
+
+## Archetype category (Balanced, Striker, Tank, Defender, Assault, Support, Brawler)
+@export var archetype: String = ""
+
 ## Cost in money to recruit one unit
 @export var recruitment_cost: int = 10
 

@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Riot Guard"
 description = "Carries a full-body energy shield and a shock baton."
+tier = 2
+archetype = "Defender"
 recruitment_cost = 100
 health_bonus = 2
 damage_bonus = 1

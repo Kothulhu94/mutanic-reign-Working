@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Cyborg Commando"
 description = "The pinnacle of infantry. A perfect fusion of cybernetics and elite training."
+tier = 4
+archetype = "Balanced"
 recruitment_cost = 750
 health_bonus = 17
 damage_bonus = 17

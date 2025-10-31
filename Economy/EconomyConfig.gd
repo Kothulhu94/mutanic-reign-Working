@@ -29,6 +29,13 @@ class_name EconomyConfig
 @export var medical_cost_processed: float = 2.5       # refined materials (Antiseptic, Bandages)
 @export var medical_cost_medicine: float = 1.0        # finished medicine (Med Kit, Stimpack)
 
+@export_group("Luxury System")
+@export var luxury_tick_interval: float = 60.0
+@export var luxury_units_per_10_pops: float = 0.5
+@export var luxury_cost_luxury_good: float = 1.0
+@export var luxury_cost_processed: float = 2.5
+@export var luxury_cost_ingredient: float = 5.0
+
 @export_group("Trading System")
 @export var caravan_surplus_threshold: float = 200.0  # Items over need to trigger caravan spawn/trading
 @export var caravan_home_tax_rate: float = 0.1        # Percentage of money caravans pay to home hub on return

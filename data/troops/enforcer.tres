@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Enforcer"
 description = "Close-quarters expert with a scatter laser and reinforced armor."
+tier = 2
+archetype = "Assault"
 recruitment_cost = 100
 health_bonus = 3
 damage_bonus = 5

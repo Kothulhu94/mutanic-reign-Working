@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Thug"
 description = "A street fighter who knows how to block a hit."
+tier = 1
+archetype = "Brawler"
 recruitment_cost = 10
 health_bonus = 0
 damage_bonus = 1

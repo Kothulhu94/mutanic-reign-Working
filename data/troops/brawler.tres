@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Brawler"
 description = "Unarmed but tough, relies on pure resilience."
+tier = 1
+archetype = "Tank"
 recruitment_cost = 10
 health_bonus = 3
 damage_bonus = 0

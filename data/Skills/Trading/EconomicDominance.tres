@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Skill" load_steps=2 format=3 uid="uid://cpx8n5kq7wmjt"]
 
-[ext_resource type="Script" path="res://Characters/Skill.gd" id="1"]
+[ext_resource type="Script" uid="uid://bcwtul4idcrmu" path="res://Characters/Skill.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,22 +9,11 @@ display_name = "Economic Dominance"
 description = "Increase all income by +50%. NPC caravans with this skill gain superior speed, inventory capacity, and trade rates."
 domain_id = &"Trading"
 tier = 3
-max_rank = 10
 primary_attribute = &"Guile"
 secondary_attribute = &"Willpower"
-primary_attr_scale = 0.75
-secondary_attr_scale = 0.25
-base_effect_per_rank = [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 1.00]
-xp_per_rank = [0, 100, 100, 100, 500, 500, 500, 1000, 1000, 2000]
 effect_type = &"total_income_bonus"
-is_multiplicative = true
-is_passive = true
-effect_cap_per_rank = []
-cooldown_cycles_per_rank = []
-resource_cost_per_rank = []
-effect_multiplier_per_rank = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+base_effect_per_rank = Array[float]([0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 1.0])
 xp_trigger = &"economic_mastery"
 xp_trigger_description = "Gain XP through sustained economic dominance"
-uses_difficulty_multiplier = true
-prerequisite_skill_ids = [&"market_monopoly", &"established_routes"]
+prerequisite_skill_ids = Array[StringName]([&"market_monopoly", &"established_routes"])
 unlocks_system = "market_monopoly"

@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Scout"
 description = "Light and fast, hits hard but can't take a punch."
+tier = 1
+archetype = "Striker"
 recruitment_cost = 10
 health_bonus = 0
 damage_bonus = 3

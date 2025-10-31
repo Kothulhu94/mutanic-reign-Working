@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Colossus"
 description = "A walking fortress. This bio-engineered behemoth is designed to absorb catastrophic amounts of damage."
+tier = 4
+archetype = "Tank"
 recruitment_cost = 750
 health_bonus = 30
 damage_bonus = 5

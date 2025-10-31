@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Aegis Warden"
 description = "An elite guard unit with self-repairing armor and a multi-target laser rifle."
+tier = 4
+archetype = "Support"
 recruitment_cost = 750
 health_bonus = 20
 damage_bonus = 10

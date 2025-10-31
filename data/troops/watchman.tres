@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Watchman"
 description = "Good at staying alive, but not much of a fighter."
+tier = 1
+archetype = "Support"
 recruitment_cost = 10
 health_bonus = 2
 damage_bonus = 0

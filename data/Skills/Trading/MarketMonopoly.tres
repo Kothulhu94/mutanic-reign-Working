@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Skill" load_steps=2 format=3 uid="uid://bwk7n2qx5pmv8"]
 
-[ext_resource type="Script" path="res://Characters/Skill.gd" id="1"]
+[ext_resource type="Script" uid="uid://bcwtul4idcrmu" path="res://Characters/Skill.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -9,22 +9,10 @@ display_name = "Market Monopoly"
 description = "Control market prices by ±30% through monopolization. NPC traders with this skill gain improved buy/sell rates."
 domain_id = &"Trading"
 tier = 2
-max_rank = 10
 primary_attribute = &"Guile"
 secondary_attribute = &"Willpower"
-primary_attr_scale = 0.75
-secondary_attr_scale = 0.25
-base_effect_per_rank = [0.30, 0.33, 0.36, 0.39, 0.42, 0.45, 0.48, 0.51, 0.54, 0.60]
-xp_per_rank = [0, 100, 100, 100, 500, 500, 500, 1000, 1000, 2000]
 effect_type = &"price_manipulation"
-is_multiplicative = true
-is_passive = true
-effect_cap_per_rank = []
-cooldown_cycles_per_rank = []
-resource_cost_per_rank = []
-effect_multiplier_per_rank = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+base_effect_per_rank = Array[float]([0.3, 0.33, 0.36, 0.39, 0.42, 0.45, 0.48, 0.51, 0.54, 0.6])
 xp_trigger = &"controlling_markets"
 xp_trigger_description = "Gain XP when dominating local markets"
-uses_difficulty_multiplier = true
-prerequisite_skill_ids = [&"market_analysis"]
-unlocks_system = ""
+prerequisite_skill_ids = Array[StringName]([&"market_analysis"])

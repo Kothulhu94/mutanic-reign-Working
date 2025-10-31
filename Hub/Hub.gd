@@ -41,6 +41,7 @@ var _inventory_float: Dictionary = {}
 @export var food_level: float = 0.0              # servings: +surplus / –deficit
 @export var infrastructure_level: float = 0.0    # units: +surplus / –deficit
 @export var medical_level: float = 0.0           # units: +surplus / –deficit
+@export var luxury_level: float = 0.0            # units: +surplus / –deficit
 
 # -------- Dynamic prices --------
 @export var item_prices: Dictionary = {}         # item_id(StringName)-> price(float)
@@ -52,8 +53,7 @@ var _last_produced: Dictionary = {}
 # Economy engine
 var _engine: HubEconomy = HubEconomy.new()
 
-# Troop production timer (5 minutes = 300 seconds)
-const TROOP_PRODUCTION_INTERVAL: float = 300.0
+# Troop production timer
 var _troop_production_timer: float = 0.0
 
 func _ready() -> void:
@@ -64,7 +64,10 @@ func _ready() -> void:
 
 	# Initialize troop stock if empty
 	if state.troop_stock.is_empty():
-		state.troop_stock[&"militia"] = 5
+		var troop_db: TroopDatabase = get_node_or_null("/root/TroopDatabase")
+		if troop_db != null:
+			for i in range(5):
+				_spawn_random_t1_pity(troop_db)
 
 	# Realize placed buildings from state
 	if slots != null:
@@ -155,6 +158,7 @@ func _on_timekeeper_tick(dt: float) -> void:
 	food_level = float(r.get("food_level", 0.0))
 	infrastructure_level = float(r.get("infrastructure_level", 0.0))
 	medical_level = float(r.get("medical_level", 0.0))
+	luxury_level = float(r.get("luxury_level", 0.0))
 
 	# ---- Price pipeline: ingest telemetry -> update prices
 	_last_consumed = (r.get("consumed", {}) as Dictionary)
@@ -530,7 +534,158 @@ func _update_item_prices() -> void:
 func _produce_troops(dt: float) -> void:
 	_troop_production_timer += dt
 
-	if _troop_production_timer >= TROOP_PRODUCTION_INTERVAL:
-		_troop_production_timer -= TROOP_PRODUCTION_INTERVAL
+	if _troop_production_timer >= state.troop_production_interval:
+		_troop_production_timer -= state.troop_production_interval
 
-		state.troop_stock[&"militia"] = state.troop_stock.get(&"militia", 0) + 1
+		var troop_db: TroopDatabase = get_node_or_null("/root/TroopDatabase")
+		if troop_db == null:
+			return
+
+		var current_total: int = _count_total_troops()
+		var cap: int = _compute_population_cap_now()
+
+		# === STEP 0: Early Exit ===
+		if current_total >= cap and _all_troops_are_elite():
+			return
+
+		var food_met_but_no_t1: bool = false
+
+		# === STEP 1: T3 → T4 ===
+		# Needs: Food + Infrastructure + Medical + Luxury
+		if food_level >= 0.0 and infrastructure_level >= 0.0 and medical_level >= 0.0 and luxury_level >= 0.0:
+			var t3_troops: Array[StringName] = _get_troops_of_tier(3)
+			if t3_troops.size() > 0:
+				var from_id: StringName = t3_troops[0]
+				var to_id: StringName = troop_db.get_upgrade_target(from_id)
+				if to_id != StringName():
+					_upgrade_troop(from_id, to_id)
+					current_total = _count_total_troops()
+			elif current_total < cap:
+				var t3_id: StringName = _get_random_troop_of_tier(troop_db, 3)
+				if t3_id != StringName():
+					state.troop_stock[t3_id] = state.troop_stock.get(t3_id, 0) + 1
+					current_total += 1
+
+		# === STEP 2: T2 → T3 ===
+		# Needs: Food + Infrastructure
+		if food_level >= 0.0 and infrastructure_level >= 0.0:
+			var t2_troops: Array[StringName] = _get_troops_of_tier(2)
+			if t2_troops.size() > 0:
+				var from_id: StringName = t2_troops[0]
+				var to_id: StringName = troop_db.get_upgrade_target(from_id)
+				if to_id != StringName():
+					_upgrade_troop(from_id, to_id)
+					current_total = _count_total_troops()
+			elif current_total < cap:
+				var t2_id: StringName = _get_random_troop_of_tier(troop_db, 2)
+				if t2_id != StringName():
+					state.troop_stock[t2_id] = state.troop_stock.get(t2_id, 0) + 1
+					current_total += 1
+
+		# === STEP 3: T1 → T2 ===
+		# Needs: Food only
+		if food_level >= 0.0:
+			var t1_troops: Array[StringName] = _get_troops_of_tier(1)
+			if t1_troops.size() > 0:
+				var from_id: StringName = t1_troops[0]
+				var to_id: StringName = troop_db.get_upgrade_target(from_id)
+				if to_id != StringName():
+					_upgrade_troop(from_id, to_id)
+					current_total = _count_total_troops()
+			else:
+				food_met_but_no_t1 = true
+
+		# === STEP 4: T1 Spawning ===
+		var t1_count: int = _count_troops_of_tier(1)
+
+		if t1_count == 0:
+			if current_total + 2 <= cap:
+				_spawn_random_t1_pity(troop_db)
+				_spawn_random_t1_pity(troop_db)
+				current_total += 2
+			elif current_total + 1 <= cap:
+				_spawn_random_t1_pity(troop_db)
+				current_total += 1
+		elif t1_count < 5 and current_total < cap:
+			_spawn_random_t1_pity(troop_db)
+			current_total += 1
+
+		# === STEP 5: Bonus T1 ===
+		if food_met_but_no_t1 and current_total < cap:
+			_spawn_random_t1_pity(troop_db)
+
+# -------------------------------------------------------------------
+# Troop management helpers
+# -------------------------------------------------------------------
+func _count_total_troops() -> int:
+	var total: int = 0
+	for count in state.troop_stock.values():
+		total += int(count)
+	return total
+
+func _all_troops_are_elite() -> bool:
+	var troop_db: TroopDatabase = get_node_or_null("/root/TroopDatabase")
+	if troop_db == null:
+		return false
+	for troop_id in state.troop_stock.keys():
+		var count: int = int(state.troop_stock[troop_id])
+		if count > 0 and troop_db.get_tier(troop_id) < 3:
+			return false
+	return true
+
+func _get_troops_of_tier(tier: int) -> Array[StringName]:
+	var troop_db: TroopDatabase = get_node_or_null("/root/TroopDatabase")
+	if troop_db == null:
+		return []
+	var result: Array[StringName] = []
+	for troop_id in state.troop_stock.keys():
+		var count: int = int(state.troop_stock[troop_id])
+		if count > 0 and troop_db.get_tier(troop_id) == tier:
+			result.append(troop_id)
+	return result
+
+func _count_troops_of_tier(tier: int) -> int:
+	var troop_db: TroopDatabase = get_node_or_null("/root/TroopDatabase")
+	if troop_db == null:
+		return 0
+	var total: int = 0
+	for troop_id in state.troop_stock.keys():
+		var count: int = int(state.troop_stock[troop_id])
+		if count > 0 and troop_db.get_tier(troop_id) == tier:
+			total += count
+	return total
+
+func _upgrade_troop(from_id: StringName, to_id: StringName) -> void:
+	var current: int = int(state.troop_stock.get(from_id, 0))
+	if current > 0:
+		state.troop_stock[from_id] = current - 1
+		if state.troop_stock[from_id] <= 0:
+			state.troop_stock.erase(from_id)
+		state.troop_stock[to_id] = state.troop_stock.get(to_id, 0) + 1
+
+func _get_random_troop_of_tier(troop_db: TroopDatabase, tier: int) -> StringName:
+	var troops: Array[StringName] = troop_db.get_troops_by_tier(tier)
+	if troops.size() > 0:
+		return troops[randi() % troops.size()]
+	return StringName()
+
+func _spawn_random_t1_pity(troop_db: TroopDatabase) -> void:
+	var all_archetypes: Array[String] = troop_db.get_all_archetypes()
+
+	# Reset pity if all 7 spawned
+	if state.archetype_spawn_pity.size() >= 7:
+		state.archetype_spawn_pity.clear()
+
+	# Find archetypes not yet spawned
+	var available: Array[String] = []
+	for arch: String in all_archetypes:
+		if not state.archetype_spawn_pity.has(arch):
+			available.append(arch)
+
+	# Pick random from available
+	if available.size() > 0:
+		var chosen: String = available[randi() % available.size()]
+		var t1_id: StringName = troop_db.get_t1_troop_for_archetype(chosen)
+		if t1_id != StringName():
+			state.troop_stock[t1_id] = state.troop_stock.get(t1_id, 0) + 1
+			state.archetype_spawn_pity.append(chosen)

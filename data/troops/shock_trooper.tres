@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Shock Trooper"
 description = "Breacher unit with an arc cannon designed to disable shields."
+tier = 2
+archetype = "Brawler"
 recruitment_cost = 100
 health_bonus = 1
 damage_bonus = 6

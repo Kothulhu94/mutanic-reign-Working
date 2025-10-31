@@ -17,6 +17,11 @@ class_name HubStates
 @export var base_population_cap: int = 100
 
 @export var trade_prices: Dictionary = {}  # item_id -> current_price
+
+# Troop production settings
+@export var troop_production_interval: float = 300.0  # 5 minutes default
+@export var archetype_spawn_pity: Array[String] = []  # Pity system: tracks spawned archetypes
+
 # Slot states (length 9 for a 3x3 grid; center is ignored by BuildSlots)
 @export var slots: Array[BuildSlotState] = []# Array[BuildSlotState]
 

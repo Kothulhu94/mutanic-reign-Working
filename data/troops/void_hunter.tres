@@ -6,6 +6,8 @@
 script = ExtResource("1")
 troop_name = "Void Hunter"
 description = "Uses experimental blink-drives to teleport, striking with energized blades before vanishing."
+tier = 4
+archetype = "Assault"
 recruitment_cost = 750
 health_bonus = 15
 damage_bonus = 25

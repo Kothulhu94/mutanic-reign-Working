@@ -140,3 +140,57 @@ func get_all_troop_ids() -> Array[StringName]:
 		result.append(troop_id)
 	result.sort()
 	return result
+
+## Returns the tier (1-4) of a troop
+func get_tier(troop_id: StringName) -> int:
+	var troop: TroopType = get_troop(troop_id)
+	return troop.tier if troop != null else 0
+
+## Returns the archetype name of a troop
+func get_archetype(troop_id: StringName) -> String:
+	var troop: TroopType = get_troop(troop_id)
+	return troop.archetype if troop != null else ""
+
+## Returns all troop IDs of a specific tier
+func get_troops_by_tier(tier: int) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for troop_id: StringName in troops.keys():
+		if get_tier(troop_id) == tier:
+			result.append(troop_id)
+	return result
+
+## Returns the upgrade target for a troop (next tier, same archetype)
+func get_upgrade_target(troop_id: StringName) -> StringName:
+	var troop: TroopType = get_troop(troop_id)
+	if troop == null or troop.tier >= 4:
+		return StringName()
+
+	var target_tier: int = troop.tier + 1
+	var archetype: String = troop.archetype
+
+	for other_id: StringName in troops.keys():
+		var other: TroopType = get_troop(other_id)
+		if other != null and other.tier == target_tier and other.archetype == archetype:
+			return other_id
+
+	return StringName()
+
+## Returns T1 troop ID for a given archetype
+func get_t1_troop_for_archetype(archetype: String) -> StringName:
+	for troop_id: StringName in troops.keys():
+		var troop: TroopType = get_troop(troop_id)
+		if troop != null and troop.tier == 1 and troop.archetype == archetype:
+			return troop_id
+	return StringName()
+
+## Returns all 7 archetype names
+func get_all_archetypes() -> Array[String]:
+	var archetypes: Dictionary = {}
+	for troop: TroopType in troops.values():
+		if troop != null and troop.archetype != "" and troop.tier == 1:
+			archetypes[troop.archetype] = true
+	var result: Array[String] = []
+	for arch in archetypes.keys():
+		result.append(arch)
+	result.sort()
+	return result
