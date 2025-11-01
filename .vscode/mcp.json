@@ -5,18 +5,20 @@
       "args": [
         "D:/MutantReign-codex-initialize-godot-4-project-skeleton/MRCF/DevTools/Godot-MCP/server/build/index.js"
       ],
-      "env": {
-        "MCP_TRANSPORT": "stdio"
-      }
+      "env": { "MCP_TRANSPORT": "stdio" }
     },
     "godot-runner": {
       "command": "node",
       "args": [
         "D:/MutantReign-codex-initialize-godot-4-project-skeleton/MRCF/DevTools/godot-mcp-runner/build/index.js"
       ],
-      "env": {
-        "DEBUG": "true"
-      }
+      "env": { "DEBUG": "true" }
+    },
+    "web-search": {
+      "command": "node",
+      "args": [
+        "D:/MutantReign-codex-initialize-godot-4-project-skeleton/MRCF/DevTools/godot-web-search/dist/index.js"
+      ]
     }
   }
 }

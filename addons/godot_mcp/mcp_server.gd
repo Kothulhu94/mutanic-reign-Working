@@ -52,10 +52,10 @@ func _enter_tree():
 	# Start WebSocket server
 	var err = tcp_server.listen(port)
 	if err == OK:
-		print("Listening on port", port)
+		print("Listening on port ", port)
 		set_process(true)
 	else:
-		printerr("Failed to listen on port", port, "error:", err)
+		printerr("Failed to listen on port ", port, " error: ", err)
 	
 	print("=== MCP SERVER INITIALIZED ===\n")
 

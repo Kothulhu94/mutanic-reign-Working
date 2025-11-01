@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\mutanic-reign\" -name \"*.gd\" -not -path \"*/.godot/*\" -not -path \"*/addons/*\" -exec wc -l {})",
-      "Bash(awk '$1 > 5')"
+      "Bash(awk '$1 > 5')",
+      "Bash(taskkill:*)",
+      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --editor --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\" --quit)"
     ],
     "deny": [],
     "ask": []
