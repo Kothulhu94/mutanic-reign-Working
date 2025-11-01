@@ -37,10 +37,13 @@ enum State {
 	TRAVELING,         # Moving to destination
 	EVALUATING_TRADE,  # At destination, checking prices
 	SELLING,           # Selling goods at destination
+	WAITING_TO_SELL,   # Waiting at hub before selling at loss
 	SEEKING_NEXT_HUB,  # Looking for another profitable hub
 	RETURNING_HOME     # Going back to home hub
 }
 var current_state: State = State.IDLE
+var _wait_timer: float = 0.0
+const WAIT_TIMEOUT: float = 60.0
 
 # Configuration (set from EconomyConfig)
 @export var surplus_threshold: float = 200.0  # Items over need to trigger spawn
@@ -136,6 +139,8 @@ func _process(delta: float) -> void:
 			_state_evaluating_trade()
 		State.SELLING:
 			_state_selling()
+		State.WAITING_TO_SELL:
+			_state_waiting_to_sell(delta)
 		State.SEEKING_NEXT_HUB:
 			_state_seeking_next_hub()
 		State.RETURNING_HOME:
@@ -234,8 +239,9 @@ func _state_evaluating_trade() -> void:
 	if has_profitable_items:
 		_transition_to(State.SELLING)
 	else:
-		# No profit here, look for another hub
-		_transition_to(State.SEEKING_NEXT_HUB)
+		# No profit here, wait before selling at a loss
+		_wait_timer = 0.0
+		_transition_to(State.WAITING_TO_SELL)
 
 func _state_selling() -> void:
 	# Sell all profitable items
@@ -283,6 +289,39 @@ func _state_selling() -> void:
 
 	# After selling, always return home to buy fresh goods
 	_transition_to(State.RETURNING_HOME)
+
+func _state_waiting_to_sell(delta: float) -> void:
+	# Wait at hub, then sell everything at a loss if timeout expires
+	_wait_timer += delta
+
+	if _wait_timer >= WAIT_TIMEOUT:
+		# Timeout reached - sell everything at current prices (even at a loss)
+		_sell_all_items()
+		_transition_to(State.RETURNING_HOME)
+
+func _sell_all_items() -> void:
+	# Sell all items at current hub prices regardless of profit/loss
+	var items_to_sell: Array[StringName] = []
+
+	for item_id: StringName in caravan_state.inventory.keys():
+		items_to_sell.append(item_id)
+
+	for item_id: StringName in items_to_sell:
+		var amount: int = caravan_state.inventory.get(item_id, 0)
+		if amount > 0 and current_target_hub != null:
+			var sell_price: float = current_target_hub.get_item_price(item_id)
+			var revenue: int = int(floor(sell_price * float(amount)))
+
+			if current_target_hub.sell_to_hub(item_id, amount, caravan_state):
+				var purchase_price: float = purchase_prices.get(item_id, 0.0)
+				var profit: int = revenue - int(purchase_price * float(amount))
+
+				caravan_state.money += revenue
+				caravan_state.profit_this_trip += profit
+				caravan_state.remove_item(item_id, amount)
+
+				# Award XP for market_analysis
+				_award_skill_xp(&"market_analysis", float(revenue))
 
 func _state_seeking_next_hub() -> void:
 	# Check if we've visited all available hubs
@@ -563,6 +602,7 @@ func get_state_name() -> String:
 		State.TRAVELING: return "Traveling"
 		State.EVALUATING_TRADE: return "Evaluating"
 		State.SELLING: return "Selling"
+		State.WAITING_TO_SELL: return "Waiting"
 		State.SEEKING_NEXT_HUB: return "Seeking"
 		State.RETURNING_HOME: return "Returning"
 		_: return "Unknown"

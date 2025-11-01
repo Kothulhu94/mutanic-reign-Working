@@ -1,0 +1,22 @@
+{
+  "servers": {
+    "godot-editor": {
+      "command": "node",
+      "args": [
+        "D:/MutantReign-codex-initialize-godot-4-project-skeleton/MRCF/DevTools/Godot-MCP/server/build/index.js"
+      ],
+      "env": {
+        "MCP_TRANSPORT": "stdio"
+      }
+    },
+    "godot-runner": {
+      "command": "node",
+      "args": [
+        "D:/MutantReign-codex-initialize-godot-4-project-skeleton/MRCF/DevTools/godot-mcp-runner/build/index.js"
+      ],
+      "env": {
+        "DEBUG": "true"
+      }
+    }
+  }
+}
