@@ -18,3 +18,11 @@ scale = Vector2(0.42419198, 0.18270536)
 texture = ExtResource("2_tqmkd")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 10.0
+path_max_distance = 50.0
+avoidance_enabled = true
+radius = 10.0
+neighbor_distance = 3592.78
+time_horizon_obstacles = 1.0
+max_speed = 200.0
+avoidance_mask = 1

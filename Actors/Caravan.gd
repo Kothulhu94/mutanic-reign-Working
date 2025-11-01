@@ -49,6 +49,7 @@ var current_state: State = State.IDLE
 # Navigation
 @export var movement_speed: float = 100.0
 var nav_agent: NavigationAgent2D = null
+var _safe_velocity: Vector2 = Vector2.ZERO
 
 # References
 var item_db: ItemDB = null
@@ -63,6 +64,10 @@ func _ready() -> void:
 
 	# Get NavigationAgent2D reference
 	nav_agent = get_node_or_null("NavigationAgent2D") as NavigationAgent2D
+
+	# Connect to NavigationAgent2D avoidance system
+	if nav_agent != null:
+		nav_agent.velocity_computed.connect(_on_velocity_computed)
 
 	# Connect input event signal for clicking
 	input_event.connect(_on_input_event)
@@ -148,13 +153,13 @@ func _transition_to(new_state: State) -> void:
 			_start_navigation_to(home_hub)
 
 func _state_idle() -> void:
-	# Check if home hub has surplus to trigger another trade run
-	if _home_has_surplus_of_preferred_items():
+	# Check if home hub has any available preferred items to continue trading
+	if _home_has_available_preferred_items():
 		_transition_to(State.BUYING_AT_HOME)
 
 func _state_buying_at_home() -> void:
-	# Spend all money on preferred items with surplus
-	var items_to_buy: Dictionary = _get_preferred_items_with_surplus(home_hub)
+	# Spend all money on any available preferred items
+	var items_to_buy: Dictionary = _get_available_preferred_items(home_hub)
 
 	var _total_bought: int = 0  # Track total items bought (reserved for future use)
 	for item_id: StringName in items_to_buy.keys():
@@ -197,12 +202,20 @@ func _state_traveling(delta: float) -> void:
 			_transition_to(State.EVALUATING_TRADE)
 		return
 
-	# Move toward next path position
+	# Calculate desired velocity and pass to avoidance system
 	var next_position: Vector2 = nav_agent.get_next_path_position()
 	var direction: Vector2 = (next_position - global_position).normalized()
-	global_position += direction * movement_speed * delta
+	var desired_velocity: Vector2 = direction * movement_speed
+	nav_agent.set_velocity(desired_velocity)
+
+	# Use safe velocity from avoidance system
+	global_position += _safe_velocity * delta
 
 func _state_evaluating_trade() -> void:
+	# Mark this hub as visited (whether we sell or not)
+	if current_target_hub != null and not visited_hubs.has(current_target_hub):
+		visited_hubs.append(current_target_hub)
+
 	# Check prices at current hub and decide whether to sell
 	var has_profitable_items: bool = false
 
@@ -268,14 +281,21 @@ func _state_selling() -> void:
 	if not visited_hubs.has(current_target_hub):
 		visited_hubs.append(current_target_hub)
 
-	# Check if we still have inventory
-	if caravan_state.inventory.size() > 0:
-		_transition_to(State.SEEKING_NEXT_HUB)
-	else:
-		# All sold, return home
-		_transition_to(State.RETURNING_HOME)
+	# After selling, always return home to buy fresh goods
+	_transition_to(State.RETURNING_HOME)
 
 func _state_seeking_next_hub() -> void:
+	# Check if we've visited all available hubs
+	var non_home_hubs: int = 0
+	for hub: Hub in all_hubs:
+		if hub != home_hub:
+			non_home_hubs += 1
+
+	# If we've visited all hubs and still have inventory, return home to get fresh goods
+	if visited_hubs.size() >= non_home_hubs:
+		_transition_to(State.RETURNING_HOME)
+		return
+
 	# Try to find another hub to sell remaining goods
 	_find_next_destination()
 
@@ -294,10 +314,14 @@ func _state_returning_home(delta: float) -> void:
 		_arrive_at_home()
 		return
 
-	# Move toward next path position
+	# Calculate desired velocity and pass to avoidance system
 	var next_position: Vector2 = nav_agent.get_next_path_position()
 	var direction: Vector2 = (next_position - global_position).normalized()
-	global_position += direction * movement_speed * delta
+	var desired_velocity: Vector2 = direction * movement_speed
+	nav_agent.set_velocity(desired_velocity)
+
+	# Use safe velocity from avoidance system
+	global_position += _safe_velocity * delta
 
 # ============================================================
 # AI Helpers
@@ -307,6 +331,16 @@ func _home_has_surplus_of_preferred_items() -> bool:
 		return false
 
 	var items: Dictionary = _get_preferred_items_with_surplus(home_hub)
+	return items.size() > 0
+
+func _home_has_available_preferred_items() -> bool:
+	if home_hub == null or caravan_state == null or caravan_state.caravan_type == null:
+		return false
+
+	if caravan_state.money <= 0:
+		return false
+
+	var items: Dictionary = _get_available_preferred_items(home_hub)
 	return items.size() > 0
 
 func _get_preferred_items_with_surplus(hub: Hub) -> Dictionary:
@@ -346,6 +380,33 @@ func _get_preferred_items_with_surplus(hub: Hub) -> Dictionary:
 		# If hub has positive level and stock is above threshold, it's surplus
 		if surplus > 0.0 and float(stock) > surplus_threshold:
 			result[item_id] = stock - int(surplus_threshold)
+
+	return result
+
+func _get_available_preferred_items(hub: Hub) -> Dictionary:
+	var result: Dictionary = {}
+
+	if hub == null or item_db == null or caravan_state == null or caravan_state.caravan_type == null:
+		return result
+
+	var preferred_tags: Array[StringName] = caravan_state.caravan_type.preferred_tags
+	if preferred_tags.is_empty():
+		return result
+
+	for item_id: StringName in hub.state.inventory.keys():
+		var stock: int = hub.state.inventory.get(item_id, 0)
+		if stock <= 0:
+			continue
+
+		# Check if item has any preferred tag
+		var has_preferred_tag: bool = false
+		for tag: StringName in preferred_tags:
+			if item_db.has_tag(item_id, tag):
+				has_preferred_tag = true
+				break
+
+		if has_preferred_tag:
+			result[item_id] = stock
 
 	return result
 
@@ -525,6 +586,9 @@ func _on_timekeeper_paused() -> void:
 
 func _on_timekeeper_resumed() -> void:
 	_is_paused = false
+
+func _on_velocity_computed(safe_velocity: Vector2) -> void:
+	_safe_velocity = safe_velocity
 
 # ============================================================
 # Trading Skills XP System

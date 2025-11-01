@@ -319,8 +319,8 @@ func _try_spawn_caravan_from_hub(home_hub: Hub, all_hubs: Array[Hub]) -> void:
 		# Spawn the caravan
 		_spawn_caravan(home_hub, caravan_type, all_hubs)
 
-		# Increase threshold for next spawn by 50%
-		caravan_threshold_multipliers[key] = threshold_multiplier * 2
+		# Increase threshold for next spawn by 5x
+		caravan_threshold_multipliers[key] = threshold_multiplier * 5.0
 
 		break  # Only spawn one caravan per hub per check
 

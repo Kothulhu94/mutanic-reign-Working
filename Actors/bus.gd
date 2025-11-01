@@ -17,6 +17,7 @@ var money: int = 1000
 var _health_visual: Control
 var _chase_target: Node2D = null
 const ENCOUNTER_DISTANCE: float = 60.0
+var _safe_velocity: Vector2 = Vector2.ZERO
 
 # Trading skill tracking
 var _trade_session_value: float = 0.0  # Total PACs traded in current session
@@ -100,6 +101,10 @@ func _ready() -> void:
 		charactersheet.health_changed.connect(_on_health_changed)
 		_on_health_changed(charactersheet.current_health, charactersheet.get_effective_health())
 
+	# Connect to NavigationAgent2D avoidance system
+	if agent != null:
+		agent.velocity_computed.connect(_on_velocity_computed)
+
 	# Connect to Timekeeper pause/resume signals
 	var timekeeper: Node = get_node_or_null("/root/Timekeeper")
 	if timekeeper != null:
@@ -130,15 +135,17 @@ func _physics_process(_delta: float) -> void:
 			agent.target_position = _chase_target.global_position
 
 	if agent:
-		var next := agent.get_next_path_position()
-		var to_next := next - global_position
+		var next: Vector2 = agent.get_next_path_position()
+		var to_next: Vector2 = next - global_position
 		if to_next.length() > 1.0:
-			velocity = to_next.normalized() * move_speed
+			var desired_velocity: Vector2 = to_next.normalized() * move_speed
+			agent.set_velocity(desired_velocity)
 		else:
-			velocity = Vector2.ZERO
+			agent.set_velocity(Vector2.ZERO)
 	else:
 		velocity = Vector2.ZERO
 
+	velocity = _safe_velocity
 	move_and_slide()
 
 func _on_timekeeper_paused() -> void:
@@ -150,6 +157,9 @@ func _on_timekeeper_resumed() -> void:
 func _on_health_changed(new_health: int, max_health: int) -> void:
 	if _health_visual != null:
 		_health_visual.update_health(new_health, max_health)
+
+func _on_velocity_computed(safe_velocity: Vector2) -> void:
+	_safe_velocity = safe_velocity
 
 ## Initiates chase of a target node
 func chase_target(target: Node2D) -> void:

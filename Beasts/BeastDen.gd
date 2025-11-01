@@ -1,11 +1,11 @@
-class_name BeastDen extends StaticBody2D
+class_name BeastDen extends Area2D
 
 ## Beast spawning building with health, emergency spawning, and combat integration
-## Blocks caravan/bus movement via StaticBody2D collision
+## Blocks caravan/bus movement via NavigationObstacle2D avoidance
 ## Spawns beasts on a tick-based interval
 
 @export var den_type: BeastDenType
-@export var obstacle_size: Vector2 = Vector2(64, 64)
+@export var obstacle_size: Vector2 = Vector2(300, 300)
 
 ## Combat integration - allows dens to be attacked
 var charactersheet: CharacterSheet
@@ -51,27 +51,21 @@ func _initialize_charactersheet() -> void:
 	charactersheet.initialize_health()
 
 func _create_navigation_obstacle() -> void:
-	var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
-	var nav_region: NavigationRegion2D = get_node_or_null("NavigationRegion2D")
+	var nav_obstacle: NavigationObstacle2D = get_node_or_null("NavigationObstacle2D")
 
-	if nav_region == null:
+	if nav_obstacle == null:
 		return
 
-	if collision_shape != null and collision_shape.shape is RectangleShape2D:
-		var rect_shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
-		rect_shape.size = obstacle_size
+	var half_x: float = obstacle_size.x / 2.0
+	var half_y: float = obstacle_size.y / 2.0
+	nav_obstacle.vertices = PackedVector2Array([
+		Vector2(-half_x, -half_y),
+		Vector2(half_x, -half_y),
+		Vector2(half_x, half_y),
+		Vector2(-half_x, half_y)
+	])
 
-	var navpoly: NavigationPolygon = NavigationPolygon.new()
-	navpoly.resource_local_to_scene = true
-	navpoly.agent_radius = 0.0
-	navpoly.add_outline(PackedVector2Array([
-		Vector2(-obstacle_size.x / 2.0, -obstacle_size.y / 2.0),
-		Vector2(obstacle_size.x / 2.0, -obstacle_size.y / 2.0),
-		Vector2(obstacle_size.x / 2.0, obstacle_size.y / 2.0),
-		Vector2(-obstacle_size.x / 2.0, obstacle_size.y / 2.0)
-	]))
-	navpoly.make_polygons_from_outlines()
-	nav_region.navigation_polygon = navpoly
+	nav_obstacle.avoidance_layers = 1
 
 ## Called automatically by Timekeeper each game tick
 func _on_timekeeper_tick(_dt: float) -> void:
@@ -114,14 +108,20 @@ func _spawn_beast(beast_scene: PackedScene) -> void:
 
 	beast.name = "%s_Beast_%d" % [name, active_beasts.size()]
 
-	var spawn_offset: Vector2 = Vector2(randf_range(-32.0, 32.0), randf_range(-32.0, 32.0))
-	beast.global_position = global_position + spawn_offset
+	var spawn_distance: float = randf_range(650.0, 800.0)
+	var spawn_angle: float = randf_range(0.0, TAU)
+	var spawn_offset: Vector2 = Vector2(cos(spawn_angle), sin(spawn_angle)) * spawn_distance
 
 	overworld.add_child(beast)
+	beast.global_position = global_position + spawn_offset
 	active_beasts.append(beast)
 
 	if beast.has_signal("tree_exited"):
 		beast.tree_exited.connect(_on_beast_removed.bind(beast))
+
+	if beast.has_signal("player_initiated_chase"):
+		if overworld.has_method("_on_chase_initiated"):
+			beast.player_initiated_chase.connect(overworld._on_chase_initiated)
 
 func _on_beast_removed(beast: Node) -> void:
 	var idx: int = active_beasts.find(beast)

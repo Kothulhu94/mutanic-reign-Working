@@ -15,8 +15,9 @@ script = ExtResource("1")
 shape = SubResource("RectangleShape2D_bison")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = true
 modulate = Color(0.6, 0.5, 0.3, 1)
-z_index = 100
+z_index = 1000
 scale = Vector2(0.45, 0.45)
 texture = ExtResource("2")
 

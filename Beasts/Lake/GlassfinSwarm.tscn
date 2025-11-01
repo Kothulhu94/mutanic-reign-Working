@@ -15,7 +15,8 @@ script = ExtResource("1")
 shape = SubResource("RectangleShape2D_glassfin")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-z_index = 100
+visible = true
+z_index = 1000
 modulate = Color(0.6, 0.8, 0.9, 1)
 scale = Vector2(0.35, 0.35)
 texture = ExtResource("2")
