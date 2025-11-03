@@ -5,7 +5,7 @@ class_name BeastDen extends Area2D
 ## Spawns beasts on a tick-based interval
 
 @export var den_type: BeastDenType
-@export var obstacle_size: Vector2 = Vector2(300, 300)
+@export var obstacle_radius: float = 45.0  # Circular obstacle for smooth agent sliding (< 60 to allow encounters)
 
 ## Combat integration - allows dens to be attacked
 var charactersheet: CharacterSheet
@@ -23,8 +23,11 @@ var emergency_triggered: bool = false
 var overworld: Node = null
 
 signal den_destroyed(den: BeastDen)
+signal player_initiated_chase(den_actor: BeastDen)
 
 func _ready() -> void:
+	input_pickable = true
+	input_event.connect(_on_input_event)
 	add_to_group("beast_den")
 	_initialize_charactersheet()
 
@@ -46,26 +49,15 @@ func _initialize_charactersheet() -> void:
 
 	charactersheet = CharacterSheet.new()
 	charactersheet.base_health = den_type.base_health
-	charactersheet.base_damage = den_type.base_damage
+	charactersheet.base_damage = -59  # Negative damage so den can never harm player (even with max roll)
 	charactersheet.base_defense = den_type.base_defense
 	charactersheet.initialize_health()
 
 func _create_navigation_obstacle() -> void:
-	var nav_obstacle: NavigationObstacle2D = get_node_or_null("NavigationObstacle2D")
-
-	if nav_obstacle == null:
-		return
-
-	var half_x: float = obstacle_size.x / 2.0
-	var half_y: float = obstacle_size.y / 2.0
-	nav_obstacle.vertices = PackedVector2Array([
-		Vector2(-half_x, -half_y),
-		Vector2(half_x, -half_y),
-		Vector2(half_x, half_y),
-		Vector2(-half_x, half_y)
-	])
-
-	nav_obstacle.avoidance_layers = 1
+	# NOTE: NavigationObstacle2D disabled for dens to allow encounter triggering
+	# The collision shape is enough to prevent overlap
+	# Avoidance was preventing Bus from getting within encounter distance (60px)
+	pass
 
 ## Called automatically by Timekeeper each game tick
 func _on_timekeeper_tick(_dt: float) -> void:
@@ -172,6 +164,13 @@ func _trigger_emergency_spawn() -> void:
 		if _at_max_capacity():
 			break
 		_spawn_beast(spawn_scene)
+
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if event is InputEventMouseButton:
+		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
+			player_initiated_chase.emit(self)
+			get_viewport().set_input_as_handled()
 
 func _remove_den() -> void:
 	den_destroyed.emit(self)

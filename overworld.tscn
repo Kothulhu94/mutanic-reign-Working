@@ -3793,7 +3793,6 @@ navigation_polygon = SubResource("NavigationPolygon_1al7d")
 
 [node name="Sprite_5_11" type="Sprite2D" parent="Chunker"]
 position = Vector2(2560, 5632)
-texture = ExtResource("184_vda73")
 centered = false
 
 [node name="Nav_5_11" type="NavigationRegion2D" parent="Chunker/Sprite_5_11"]
@@ -3822,6 +3821,10 @@ centered = false
 
 [node name="Nav_8_11" type="NavigationRegion2D" parent="Chunker/Sprite_8_11"]
 navigation_polygon = SubResource("NavigationPolygon_cg0vi")
+
+[node name="Chunk511" type="Sprite2D" parent="Chunker/Sprite_8_11"]
+position = Vector2(-1279.4999, 255.50017)
+texture = ExtResource("184_vda73")
 
 [node name="Sprite_9_11" type="Sprite2D" parent="Chunker"]
 position = Vector2(4608, 5632)
@@ -4419,6 +4422,5 @@ recruitment_ui = NodePath("../UILayer/RecruitmentUI")
 [node name="RecruitmentUI" parent="UILayer" instance=ExtResource("264_recruitmentui")]
 
 [node name="BeastDen" parent="." instance=ExtResource("265_45p7e")]
-position = Vector2(653.5, 1342.8334)
-input_pickable = false
+position = Vector2(701.1666, 1288.6666)
 den_type = ExtResource("266_ak540")

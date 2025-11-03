@@ -4,7 +4,22 @@
       "Bash(find \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\mutanic-reign\" -name \"*.gd\" -not -path \"*/.godot/*\" -not -path \"*/addons/*\" -exec wc -l {})",
       "Bash(awk '$1 > 5')",
       "Bash(taskkill:*)",
-      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --editor --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\" --quit)"
+      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --editor --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\" --quit)",
+      "mcp__godot-runner__get_debug_output",
+      "mcp__godot-runner__run_project",
+      "mcp__web-scraper__firecrawl_search",
+      "mcp__web-scraper__firecrawl_scrape",
+      "mcp__godot-runner__stop_project",
+      "mcp__godot-runner__launch_editor",
+      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --headless --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\" --script res://Beasts/BeastDen.gd)",
+      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --headless --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\" res://overworld.tscn)",
+      "mcp__godot-editor__get_current_scene",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\")",
+      "Bash(\"d:\\Godot_v4.5.1-stable_win64.exe\" --path \"d:\\MutantReign-codex-initialize-godot-4-project-skeleton\\MRCF\\mutanic-reign-Working\" res://overworld.tscn)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

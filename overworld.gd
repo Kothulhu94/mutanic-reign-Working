@@ -138,6 +138,16 @@ func _ready() -> void:
 		if caravan is Caravan:
 			caravan.player_initiated_chase.connect(_on_chase_initiated)
 
+	# Connect any pre-existing beast den signals
+	for den in get_tree().get_nodes_in_group("beast_den"):
+		if den is BeastDen:
+			den.player_initiated_chase.connect(_on_chase_initiated)
+
+	# Connect any pre-existing beast signals
+	for beast in get_tree().get_nodes_in_group("beasts"):
+		if beast is Beast:
+			beast.player_initiated_chase.connect(_on_chase_initiated)
+
 func _process(delta: float) -> void:
 	# Don't process when game is paused (UI is open)
 	if _is_paused:
@@ -428,16 +438,16 @@ func _on_timekeeper_resumed() -> void:
 func _on_chase_started() -> void:
 	pass  # Pathline will update automatically during chase
 
-func _on_chase_initiated(caravan_actor: Caravan) -> void:
+func _on_chase_initiated(target_actor: Node2D) -> void:
 	if _player_bus != null and bus != null:
-		# Set up pathline to show route to caravan
+		# Set up pathline to show route to target (caravan or beast den)
 		var start_on_nav: Vector2 = _snap_to_nav(bus.global_position)
-		var target_on_nav: Vector2 = _snap_to_nav(caravan_actor.global_position)
+		var target_on_nav: Vector2 = _snap_to_nav(target_actor.global_position)
 		var world_path: PackedVector2Array = _compute_nav_path(start_on_nav, target_on_nav)
 		_set_path_line(world_path)
 
 		# Start the chase
-		_player_bus.chase_target(caravan_actor)
+		_player_bus.chase_target(target_actor)
 
 func _on_encounter_initiated(attacker: Node2D, defender: Node2D) -> void:
 	if _encounter_ui != null:
