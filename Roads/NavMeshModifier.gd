@@ -117,7 +117,9 @@ static func _get_polygon_area(polygon: PackedVector2Array) -> float:
 
 
 static func _force_navmesh_update(nav_region: NavigationRegion2D) -> void:
-	if nav_region.enabled:
-		nav_region.enabled = false
-		await nav_region.get_tree().process_frame
-		nav_region.enabled = true
+	if not nav_region.enabled:
+		return
+
+	var map_rid: RID = nav_region.get_navigation_map()
+	if map_rid.is_valid():
+		NavigationServer2D.map_force_update(map_rid)
