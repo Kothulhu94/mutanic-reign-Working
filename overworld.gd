@@ -36,6 +36,9 @@ var _player_bus: Bus
 var _encounter_ui: Control
 var _loot_ui: Control
 var _game_over_ui: Control
+var _road_manager: RoadManager
+var _road_builder: RoadBuilder
+var _overworld_ui: OverworldUI
 
 func _ready() -> void:
 	await _await_nav_ready()
@@ -137,6 +140,20 @@ func _ready() -> void:
 	for caravan in get_tree().get_nodes_in_group("caravans"):
 		if caravan is Caravan:
 			caravan.player_initiated_chase.connect(_on_chase_initiated)
+
+	# Initialize Road System
+	_road_manager = RoadManager.new()
+	add_child(_road_manager)
+	_road_manager.initialize(self)
+
+	_road_builder = RoadBuilder.new()
+	add_child(_road_builder)
+	_road_builder.initialize(self, cam)
+
+	var overworld_ui_scene: PackedScene = preload("res://Roads/UI/OverworldUI.tscn")
+	_overworld_ui = overworld_ui_scene.instantiate() as OverworldUI
+	add_child(_overworld_ui)
+	_overworld_ui.initialize(_road_builder, _road_manager)
 
 func _process(delta: float) -> void:
 	# Don't process when game is paused (UI is open)
