@@ -1,7 +1,7 @@
 [gd_scene load_steps=546 format=3 uid="uid://bn7il32yep7nb"]
 
-[ext_resource type="Script" uid="uid://c7s2t2bplv8mh" path="res://overworld.gd" id="1_overworld"]
-[ext_resource type="Script" uid="uid://c13gtnisdmqyn" path="res://scripts/chunker.gd" id="2_nyb65"]
+[ext_resource type="Script" uid="uid://c7s2t2bplv8mh" path="uid://c7s2t2bplv8mh" id="1_overworld"]
+[ext_resource type="Script" uid="uid://c13gtnisdmqyn" path="uid://c13gtnisdmqyn" id="2_nyb65"]
 [ext_resource type="Texture2D" uid="uid://nwu1dekjdwcn" path="res://chunks/chunk_0_0.png" id="3_mb8ku"]
 [ext_resource type="Texture2D" uid="uid://sicksodv4up4" path="res://chunks/chunk_1_0.png" id="4_7r4as"]
 [ext_resource type="Texture2D" uid="uid://dvuudkapb3yhd" path="res://chunks/chunk_2_0.png" id="5_vu0qf"]

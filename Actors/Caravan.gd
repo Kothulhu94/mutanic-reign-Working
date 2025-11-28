@@ -1,4 +1,4 @@
-# res://Actors/Caravan.gd
+# uid://b2iyabtka0f3x
 # Godot 4.5 — Caravan Trading AI
 # Spawns when home hub has surplus (200+ items over need)
 # Buys preferred items at home, travels to other hubs to sell for profit

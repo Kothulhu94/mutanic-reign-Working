@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SkillDatabase" load_steps=14 format=3 uid="uid://skill_database_root"]
 
-[ext_resource type="Script" path="res://Characters/SkillDatabase.gd" id="1"]
+[ext_resource type="Script" path="uid://cg7v4inyg6hlh" id="1"]
 [ext_resource type="Resource" path="res://data/Domains/MeleeDomain.tres" id="2"]
 [ext_resource type="Resource" path="res://data/Domains/RangedDomain.tres" id="3"]
 [ext_resource type="Resource" path="res://data/Domains/ArtifactWeaponsDomain.tres" id="4"]

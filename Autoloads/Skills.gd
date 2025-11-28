@@ -1,4 +1,4 @@
-# res://Autoloads/Skills.gd
+# uid://bq5yu7o2fefpv
 extends Node
 
 ## Global singleton for accessing the SkillDatabase

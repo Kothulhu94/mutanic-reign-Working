@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://ccjf7l2hvwepv"]
 
-[ext_resource type="Script" uid="uid://bbdwxfua6b0bt" path="res://UI/CharacterSheetUI.gd" id="1_uqggg"]
+[ext_resource type="Script" uid="uid://bbdwxfua6b0bt" path="uid://bbdwxfua6b0bt" id="1_uqggg"]
 [ext_resource type="PackedScene" uid="uid://dkvn8y7x5nbrq" path="res://UI/SkillListUI.tscn" id="2_dcr2p"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_charsheet"]

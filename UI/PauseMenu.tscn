@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://mll5vsg753d"]
 
-[ext_resource type="Script" uid="uid://dm5w0yxg72ud" path="res://UI/PauseMenu.gd" id="1_05bun"]
+[ext_resource type="Script" uid="uid://dm5w0yxg72ud" path="uid://dm5w0yxg72ud" id="1_05bun"]
 [ext_resource type="PackedScene" uid="uid://ccjf7l2hvwepv" path="res://UI/CharacterSheetUI.tscn" id="2_tsvmi"]
 [ext_resource type="PackedScene" uid="uid://bxkq7n8y2qr8w" path="res://UI/InventoryUI.tscn" id="3_inventory"]
 [ext_resource type="PackedScene" uid="uid://dh8k2n7x9q3m5" path="res://UI/SaveLoadUI.tscn" id="4_saveload"]

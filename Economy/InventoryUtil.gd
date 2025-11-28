@@ -1,4 +1,4 @@
-# res://Economy/InventoryUtil.gd
+# uid://de1ytl42b8gqk
 extends RefCounted
 class_name InventoryUtil
 

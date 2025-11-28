@@ -1,4 +1,4 @@
-# res://Characters/XPCalculator.gd
+# uid://uvxisf70jx0o
 extends Node
 class_name XPCalculator
 

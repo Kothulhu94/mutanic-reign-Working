@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="HubStates" load_steps=7 format=3 uid="uid://boqebad2qbjwp"]
 
-[ext_resource type="Script" uid="uid://nw86g3k1v0k5" path="res://data/HubState.gd" id="1_e1yx1"]
+[ext_resource type="Script" uid="uid://nw86g3k1v0k5" path="uid://nw86g3k1v0k5" id="1_e1yx1"]
 [ext_resource type="PackedScene" uid="uid://uqlvck4omyo4" path="res://Buildings/WheatFarm.tscn" id="2_jgqmv"]
-[ext_resource type="Script" uid="uid://dbvy0klhldh0m" path="res://data/BuildSlotState.gd" id="3_66ufq"]
+[ext_resource type="Script" uid="uid://dbvy0klhldh0m" path="uid://dbvy0klhldh0m" id="3_66ufq"]
 [ext_resource type="PackedScene" uid="uid://bntrtl1i63s6" path="res://Buildings/Bakery.tscn" id="4_jxdyd"]
 
 [sub_resource type="Resource" id="Resource_jxdyd"]

@@ -1,4 +1,4 @@
-# res://Characters/SkillDatabase.gd
+# uid://cg7v4inyg6hlh
 extends Resource
 class_name SkillDatabase
 

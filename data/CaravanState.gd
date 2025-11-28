@@ -1,4 +1,4 @@
-# res://data/CaravanState.gd
+# uid://chnq3gchtj8gn
 extends RefCounted
 class_name CaravanState
 

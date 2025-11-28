@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="SkillDomain" load_steps=10 format=3 uid="uid://cla6rnnlawvbr"]
 
-[ext_resource type="Script" uid="uid://kj506ua3it00" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Script" uid="uid://kj506ua3it00" path="uid://kj506ua3it00" id="1"]
 [ext_resource type="Resource" uid="uid://c8vw5kn7qxpm2" path="res://data/Skills/Trading/MarketAnalysis.tres" id="2"]
-[ext_resource type="Script" uid="uid://bcwtul4idcrmu" path="res://Characters/Skill.gd" id="2_m544t"]
+[ext_resource type="Script" uid="uid://bcwtul4idcrmu" path="uid://bcwtul4idcrmu" id="2_m544t"]
 [ext_resource type="Resource" uid="uid://djx7n3kq5wmvp" path="res://data/Skills/Trading/CaravanLogistics.tres" id="3"]
 [ext_resource type="Resource" uid="uid://cpx4n8kq7wmv2" path="res://data/Skills/Trading/NegotiationTactics.tres" id="4"]
 [ext_resource type="Resource" uid="uid://bwk7n2qx5pmv8" path="res://data/Skills/Trading/MarketMonopoly.tres" id="5"]

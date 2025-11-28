@@ -1,4 +1,4 @@
-# res://data/CaravanType.gd
+# uid://baj5eti6c1qc7
 extends Resource
 class_name CaravanType
 

@@ -1,4 +1,4 @@
-# res://Characters/SkillDomain.gd
+# uid://kj506ua3it00
 extends Resource
 class_name SkillDomain
 

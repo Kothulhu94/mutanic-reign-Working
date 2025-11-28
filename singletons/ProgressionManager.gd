@@ -1,4 +1,4 @@
-# res://singletons/ProgressionManager.gd
+# uid://crqrvswudtp31
 extends Node
 
 ## Global singleton for managing all character progression instances

@@ -1,4 +1,4 @@
-# res://UI/SkillListUI.gd
+# uid://7hwqum185vfm
 extends Control
 
 ## UI for displaying all skills organized by domain with tabbed pages

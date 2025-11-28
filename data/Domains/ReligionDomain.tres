@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SkillDomain" load_steps=11 format=3 uid="uid://domain_religion"]
 
-[ext_resource type="Script" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Script" path="uid://kj506ua3it00" id="1"]
 [ext_resource type="Resource" path="res://data/Skills/Religion/BasicPreaching.tres" id="2"]
 [ext_resource type="Resource" path="res://data/Skills/Religion/ReligiousDoctrine.tres" id="3"]
 [ext_resource type="Resource" path="res://data/Skills/Religion/CommunityRituals.tres" id="4"]

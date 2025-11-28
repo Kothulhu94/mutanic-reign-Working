@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SkillDomain" load_steps=9 format=3 uid="uid://domain_diplomacy"]
 
-[ext_resource type="Script" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Script" path="uid://kj506ua3it00" id="1"]
 [ext_resource type="Resource" path="res://data/Skills/Diplomacy/FirstContact.tres" id="2"]
 [ext_resource type="Resource" path="res://data/Skills/Diplomacy/TreatyNegotiation.tres" id="3"]
 [ext_resource type="Resource" path="res://data/Skills/Diplomacy/CulturalUnderstanding.tres" id="4"]

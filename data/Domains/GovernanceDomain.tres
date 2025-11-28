@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SkillDomain" load_steps=9 format=3 uid="uid://domain_governance"]
 
-[ext_resource type="Script" path="res://Characters/SkillDomain.gd" id="1"]
+[ext_resource type="Script" path="uid://kj506ua3it00" id="1"]
 [ext_resource type="Resource" path="res://data/Skills/Governance/CivilAdministration.tres" id="2"]
 [ext_resource type="Resource" path="res://data/Skills/Governance/TaxOptimization.tres" id="3"]
 [ext_resource type="Resource" path="res://data/Skills/Governance/UrbanDevelopment.tres" id="4"]

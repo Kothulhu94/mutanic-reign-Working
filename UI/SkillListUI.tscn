@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dkvn8y7x5nbrq"]
 
-[ext_resource type="Script" uid="uid://7hwqum185vfm" path="res://UI/SkillListUI.gd" id="1_skill"]
+[ext_resource type="Script" uid="uid://7hwqum185vfm" path="uid://7hwqum185vfm" id="1_skill"]
 [ext_resource type="Resource" path="res://data/SkillDatabase.tres" id="2_g7b2q"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_skilllist"]

@@ -1,4 +1,4 @@
-# res://Economy/EconomyConfig.gd
+# uid://0lqa1tmokx8q
 extends Resource
 class_name EconomyConfig
 

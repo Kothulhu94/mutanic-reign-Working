@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cu7jy8xv5xj0b"]
 
-[ext_resource type="Script" path="res://UI/HubMenuUI.gd" id="1_1"]
+[ext_resource type="Script" path="uid://cdv5metrnjoug" id="1_1"]
 
 [node name="HubMenuUI" type="Control"]
 layout_mode = 3

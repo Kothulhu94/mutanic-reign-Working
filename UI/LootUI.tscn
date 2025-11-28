@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c2m7k9x3p5qn8"]
 
-[ext_resource type="Script" path="res://UI/LootUI.gd" id="1_loot"]
+[ext_resource type="Script" path="uid://c8va60qhwoql0" id="1_loot"]
 
 [node name="LootUI" type="Control"]
 layout_mode = 3

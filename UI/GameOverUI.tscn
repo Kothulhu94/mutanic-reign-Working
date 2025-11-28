@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://d3k9m7x5p2qn4"]
 
-[ext_resource type="Script" path="res://UI/GameOverUI.gd" id="1_gameover"]
+[ext_resource type="Script" path="uid://2uqni70fm7ov" id="1_gameover"]
 
 [node name="GameOverUI" type="Control"]
 layout_mode = 3

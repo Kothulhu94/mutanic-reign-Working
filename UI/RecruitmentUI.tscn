@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dr8k3m5y4qr9x"]
 
-[ext_resource type="Script" path="res://UI/RecruitmentUI.gd" id="1_recruitment"]
+[ext_resource type="Script" path="uid://dirpruds6raod" id="1_recruitment"]
 
 [node name="RecruitmentUI" type="Control"]
 layout_mode = 3

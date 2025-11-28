@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://myco_stag"]
 
-[ext_resource type="Script" path="res://Beasts/Forest/MycoStag.gd" id="1"]
+[ext_resource type="Script" path="uid://ro3k0egghnx4" id="1"]
 [ext_resource type="Texture2D" uid="uid://b5aq34n3fo0al" path="res://icon.svg" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_stag"]

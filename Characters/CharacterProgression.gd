@@ -1,4 +1,4 @@
-# res://Characters/CharacterProgression.gd
+# uid://0wf6j3u0re3i
 extends RefCounted
 class_name CharacterProgression
 

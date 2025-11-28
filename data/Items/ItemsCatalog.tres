@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ItemDB" load_steps=34 format=3 uid="uid://dpu7dor4326r3"]
 
 [ext_resource type="Resource" uid="uid://cttkx1kfbqtg3" path="res://data/Items/Wheat.tres" id="1_cy0fy"]
-[ext_resource type="Script" uid="uid://k0oeo8cvtysn" path="res://data/Items/ItemDB.gd" id="1_ofils"]
+[ext_resource type="Script" uid="uid://k0oeo8cvtysn" path="uid://k0oeo8cvtysn" id="1_ofils"]
 [ext_resource type="Resource" uid="uid://cyiyvj1hu658e" path="res://data/Items/RabbitMeat.tres" id="2_xdey0"]
 [ext_resource type="Resource" uid="uid://cg14vrqfmcma5" path="res://data/Items/Hemp.tres" id="3_qkibh"]
 [ext_resource type="Resource" uid="uid://bsrjbqo73rob2" path="res://data/Items/Aloe.tres" id="4_nqmmg"]

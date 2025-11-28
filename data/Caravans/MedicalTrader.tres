@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CaravanType" load_steps=3 format=3 uid="uid://calnlbpqgqy7v"]
 
-[ext_resource type="Script" uid="uid://baj5eti6c1qc7" path="res://data/CaravanType.gd" id="1_lickd"]
+[ext_resource type="Script" uid="uid://baj5eti6c1qc7" path="uid://baj5eti6c1qc7" id="1_lickd"]
 [ext_resource type="Texture2D" uid="uid://b5blloojffsay" path="res://art_src/MedicalTrader.png" id="2_kwqjx"]
 
 [resource]

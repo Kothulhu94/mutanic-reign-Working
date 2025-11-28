@@ -1,4 +1,4 @@
-# res://Characters/SkillSpec.gd
+# uid://b7ilx6vi5am45
 extends Resource
 class_name SkillSpec
 

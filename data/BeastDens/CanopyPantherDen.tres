@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="BeastDenType" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://data/BeastDens/BeastDenType.gd" id="1"]
+[ext_resource type="Script" path="uid://c5nadgvmicipm" id="1"]
 [ext_resource type="PackedScene" uid="uid://canopy_panther" path="res://Beasts/Forest/CanopyPanther.tscn" id="2"]
 
 [resource]

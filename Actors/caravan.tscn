@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bgbook0avqvjl"]
 
-[ext_resource type="Script" uid="uid://b2iyabtka0f3x" path="res://Actors/Caravan.gd" id="1_caravan"]
+[ext_resource type="Script" uid="uid://b2iyabtka0f3x" path="uid://b2iyabtka0f3x" id="1_caravan"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jna1y"]
 size = Vector2(55, 24)

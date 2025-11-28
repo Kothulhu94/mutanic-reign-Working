@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b8kj3x4n2qp5m"]
 
-[ext_resource type="Script" path="res://UI/EncounterUI.gd" id="1_encounter"]
+[ext_resource type="Script" path="uid://pyo2upv0je3b" id="1_encounter"]
 
 [node name="EncounterUI" type="Control"]
 layout_mode = 1

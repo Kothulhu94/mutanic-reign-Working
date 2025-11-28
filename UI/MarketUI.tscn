@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bxn5d8qv2mw5k"]
 
-[ext_resource type="Script" path="res://UI/MarketUI.gd" id="1_1"]
+[ext_resource type="Script" path="uid://6wv1jrage7ue" id="1_1"]
 
 [node name="MarketUI" type="Control"]
 layout_mode = 3

@@ -1,4 +1,4 @@
-# res://Characters/DomainSpec.gd
+# uid://c1txl1fmrp17a
 extends Resource
 class_name DomainSpec
 

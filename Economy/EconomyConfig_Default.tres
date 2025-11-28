@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="EconomyConfig" load_steps=2 format=3 uid="uid://bt1kumnmrw5ij"]
 
-[ext_resource type="Script" uid="uid://0lqa1tmokx8q" path="res://Economy/EconomyConfig.gd" id="1_yqrdj"]
+[ext_resource type="Script" uid="uid://0lqa1tmokx8q" path="uid://0lqa1tmokx8q" id="1_yqrdj"]
 
 [resource]
 script = ExtResource("1_yqrdj")

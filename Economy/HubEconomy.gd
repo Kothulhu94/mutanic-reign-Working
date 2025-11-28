@@ -1,4 +1,4 @@
-# res://Economy/HubEconomy.gd
+# uid://dxt1qidw4mvuo
 # Godot 4.5 — Economy engine:
 # - Producers → Processors → Food consumption → Infrastructure consumption
 # - Returns telemetry for pricing: "produced" and "consumed" per tick (positive magnitudes)

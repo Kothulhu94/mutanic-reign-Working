@@ -1,4 +1,4 @@
-# res://Characters/CharacterAttributes.gd
+# uid://kvutokt2hc02
 extends Resource
 class_name CharacterAttributes
 
