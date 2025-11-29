@@ -1,0 +1,455 @@
+@reference "Godot 4.5 Complete API Reference"
+@format "TOON 1.4"
+@context "High-performance, Thread-safe, Asynchronous Architecture"
+@version "4.5.stable"
+
+@# =============================================================================
+@# BUILT-IN GLOBAL SCOPE
+@# =============================================================================
+
+@class @GlobalScope
+  @description "Global scope constants and functions."
+  @singletons
+    AudioServer, CameraServer, ClassDB, DisplayServer, EditorInterface, Engine, Geometry2D, IP, Input, InputMap, JavaClassWrapper, JavaScriptBridge, Marshalls, NavigationMeshGenerator, NavigationServer2D, NavigationServer3D, OS, Performance, PhysicsServer2D, PhysicsServer3D, ProjectSettings, RenderingServer, ResourceLoader, ResourceSaver, ResourceUID, TextServerManager, ThemeDB, Time, TranslationServer, WorkerThreadPool, XRServer
+  @methods
+    abs[1]{x} Variant
+      @description "Returns the absolute value of parameter 'x'."
+    acos[1]{x} float
+      @description "Returns the arc cosine of 'x' in radians."
+    asin[1]{x} float
+      @description "Returns the arc sine of 'x' in radians."
+    atan[1]{x} float
+      @description "Returns the arc tangent of 'x' in radians."
+    atan2[2]{y, x} float
+      @description "Returns the arc tangent of 'y'/'x' in radians."
+    ceil[1]{x} Variant
+      @description "Rounds 'x' upward."
+    clamp[3]{value, min, max} Variant
+      @description "Clamps 'value' between 'min' and 'max'."
+    cos[1]{angle} float
+      @description "Returns the cosine of 'angle' in radians."
+    deg_to_rad[1]{deg} float
+      @description "Converts degrees to radians."
+    floor[1]{x} Variant
+      @description "Rounds 'x' downward."
+    lerp[3]{from, to, weight} Variant
+      @description "Linearly interpolates between 'from' and 'to' by 'weight'."
+    max[2]{a, b} Variant
+      @description "Returns the maximum of two values."
+    min[2]{a, b} Variant
+      @description "Returns the minimum of two values."
+    pow[2]{base, exp} float
+      @description "Returns 'base' raised to the power of 'exp'."
+    print[vararg] void
+      @description "Converts arguments to strings and prints them to the console."
+    rad_to_deg[1]{rad} float
+      @description "Converts radians to degrees."
+    randf[0] float
+      @description "Returns a random float between 0.0 and 1.0."
+    randi[0] int
+      @description "Returns a random integer."
+    round[1]{x} Variant
+      @description "Rounds 'x' to the nearest whole number."
+    sin[1]{angle} float
+      @description "Returns the sine of 'angle' in radians."
+    sqrt[1]{x} float
+      @description "Returns the square root of 'x'."
+    tan[1]{angle} float
+      @description "Returns the tangent of 'angle' in radians."
+
+@class @GDScript
+  @description "Built-in GDScript functions and constants."
+  @constants
+    PI = 3.14159265358979
+    TAU = 6.28318530717959
+    INF = inf
+    NAN = nan
+  @methods
+    assert[2]{condition, message} void
+      @description "Asserts that the condition is true."
+    load[1]{path} Resource
+      @description "Loads a resource from the filesystem."
+    preload[1]{path} Resource
+      @description "Preloads a resource during script parsing."
+    print_debug[vararg] void
+      @description "Like print(), but includes stack trace."
+    range[vararg] Array
+      @description "Returns an array of integers in a range."
+    str[vararg] String
+      @description "Converts arguments to a string."
+
+@# =============================================================================
+@# CORE TYPE DEFINITIONS
+@# =============================================================================
+
+@types
+  RID "Unique Resource ID handle (opaque int64)"
+  Callable "Function reference (object + method)"
+  PackedByteArray "16KB-page aligned byte array"
+  NavigationPolygon "Resource containing nav mesh data"
+  Transform2D "3x2 matrix for 2D position/rotation"
+
+@# =============================================================================
+@# FUNDAMENTAL OBJECT HIERARCHY
+@# =============================================================================
+
+@class Object
+  @description "Base class for all non-built-in types."
+  @methods
+    free[0] void
+      @description "Deletes the object."
+    get[1]{property} Variant
+      @description "Returns the value of the given property."
+    set[2]{property, value} void
+      @description "Sets the value of the given property."
+    call[vararg] Variant
+      @description "Calls the method on the object and returns the result."
+    emit_signal[vararg] Error
+      @description "Emits the given signal."
+    connect[3]{signal, callable, flags} Error
+      @description "Connects a signal to a callable."
+    disconnect[2]{signal, callable} void
+      @description "Disconnects a signal from a callable."
+    is_connected[2]{signal, callable} bool
+      @description "Returns true if the signal is connected."
+    has_method[1]{method} bool
+      @description "Returns true if the object has the method."
+    has_signal[1]{signal} bool
+      @description "Returns true if the object has the signal."
+    get_instance_id[0] int
+      @description "Returns the object's unique instance ID."
+    to_string[0] String
+      @description "Returns a string representation of the object."
+  @signals
+    script_changed[0]
+    property_list_changed[0]
+
+@class RefCounted
+  @extends Object
+  @description "Base class for reference-counted objects."
+  @methods
+    get_reference_count[0] int
+      @description "Returns the current reference count."
+
+@class Resource
+  @extends RefCounted
+  @description "Base class for all resources."
+  @properties
+    resource_path String
+    resource_name String
+    resource_local_to_scene bool
+  @methods
+    duplicate[1]{subresources} Resource
+      @description "Duplicates the resource."
+    emit_changed[0] void
+      @description "Emits the changed signal."
+  @signals
+    changed[0]
+
+@# =============================================================================
+@# SCENE TREE HIERARCHY
+@# =============================================================================
+
+@class Node
+  @extends Object
+  @description "Base class for all scene objects."
+  @properties
+    name StringName
+    owner Node
+    multiplayer MultiplayerAPI
+    process_mode int
+    process_priority int
+    physics_interpolation_mode int
+    scene_file_path String
+  @methods
+    add_child[3]{node, force_readable_name, internal} void
+      @description "Adds a child node."
+    remove_child[1]{node} void
+      @description "Removes a child node."
+    get_child[2]{idx, include_internal} Node
+      @description "Returns the child node at the given index."
+    get_child_count[1]{include_internal} int
+      @description "Returns the number of child nodes."
+    get_children[1]{include_internal} Array[Node]
+      @description "Returns an array of references to the children."
+    get_node[1]{path} Node
+      @description "Fetches a node."
+    get_parent[0] Node
+      @description "Returns the parent node."
+    find_child[3]{pattern, recursive, owned} Node
+      @description "Finds a child node by name."
+    find_children[3]{pattern, type, recursive, owned} Array[Node]
+      @description "Finds child nodes by name."
+    queue_free[0] void
+      @description "Queues the node for deletion."
+    create_tween[0] Tween
+      @description "Creates a Tween."
+    rpc[vararg] Error
+      @description "Sends a remote procedure call."
+  @signals
+    ready[0]
+    tree_entered[0]
+    tree_exiting[0]
+    tree_exited[0]
+    child_entered_tree[1]{node}
+    child_exiting_tree[1]{node}
+
+@class SceneTree
+  @extends MainLoop
+  @description "Manages the game loop and the hierarchy of nodes."
+  @properties
+    root Window
+    current_scene Node
+    paused bool
+  @methods
+    change_scene_to_file[1]{path} Error
+      @description "Changes the running scene to the one at the given path."
+    change_scene_to_packed[1]{packed_scene} Error
+      @description "Changes the running scene to the given PackedScene."
+    reload_current_scene[0] Error
+      @description "Reloads the currently active scene."
+    quit[1]{exit_code} void
+      @description "Quits the application."
+    create_timer[3]{time_sec, process_always, process_in_physics, ignore_time_scale} SceneTreeTimer
+      @description "Returns a SceneTreeTimer."
+    call_group[vararg] void
+      @description "Calls a method on each member of the given group."
+    get_nodes_in_group[1]{group} Array[Node]
+      @description "Returns a list of nodes in the given group."
+  @signals
+    process_frame[0]
+    physics_frame[0]
+    node_added[1]{node}
+    node_removed[1]{node}
+
+@# =============================================================================
+@# BUILT-IN DATA TYPES
+@# =============================================================================
+
+@class Vector2
+  @description "A 2D vector using floating-point coordinates."
+  @properties
+    x float
+    y float
+  @constants
+    ZERO = Vector2(0, 0)
+    ONE = Vector2(1, 1)
+    INF = Vector2(inf, inf)
+    LEFT = Vector2(-1, 0)
+    RIGHT = Vector2(1, 0)
+    UP = Vector2(0, -1)
+    DOWN = Vector2(0, 1)
+  @methods
+    angle[0] float
+      @description "Returns the angle of the vector."
+    angle_to[1]{to} float
+      @description "Returns the angle to the given vector."
+    distance_to[1]{to} float
+      @description "Returns the distance to the given vector."
+    dot[1]{with} float
+      @description "Returns the dot product."
+    length[0] float
+      @description "Returns the length of the vector."
+    length_squared[0] float
+      @description "Returns the squared length of the vector."
+    lerp[2]{to, weight} Vector2
+      @description "Linear interpolation."
+    normalized[0] Vector2
+      @description "Returns the vector scaled to unit length."
+    rotated[1]{angle} Vector2
+      @description "Returns the vector rotated by angle."
+
+@class Array
+  @description "A generic array data type."
+  @methods
+    size[0] int
+      @description "Returns the number of elements."
+    is_empty[0] bool
+      @description "Returns true if the array is empty."
+    clear[0] void
+      @description "Clears the array."
+    append[1]{value} void
+      @description "Appends an element."
+    push_back[1]{value} void
+      @description "Appends an element."
+    insert[2]{position, value} int
+      @description "Inserts an element at a given position."
+    remove_at[1]{position} void
+      @description "Removes an element at a given position."
+    erase[1]{value} void
+      @description "Removes the first occurrence of a value."
+    has[1]{value} bool
+      @description "Returns true if the array contains the value."
+    find[2]{what, from} int
+      @description "Searches for a value."
+    sort[0] void
+      @description "Sorts the array."
+    shuffle[0] void
+      @description "Shuffles the array."
+    duplicate[1]{deep} Array
+      @description "Returns a copy of the array."
+    slice[4]{begin, end, step, deep} Array
+      @description "Returns a slice of the array."
+    map[1]{method} Array
+      @description "Calls the method on each element and returns the results."
+    filter[1]{method} Array
+      @description "Filters the array."
+    reduce[2]{method, accum} Variant
+      @description "Reduces the array."
+    any[1]{method} bool
+      @description "Returns true if any element satisfies the method."
+    all[1]{method} bool
+      @description "Returns true if all elements satisfy the method."
+    pick_random[0] Variant
+      @description "Returns a random element."
+
+@# =============================================================================
+@# RESOURCE MANAGEMENT SINGLETONS
+@# =============================================================================
+
+@class ResourceUID
+  @extends Object
+  @singleton true
+  @thread_safety "Read-safe. Write requires external locking if threaded."
+  @description "Global registry mapping immutable integer IDs to file paths."
+
+  @constants
+    INVALID_ID -1 "Returned on failure/lookup miss"
+
+  @methods
+    id_to_text[1]{id} String
+      @description "Converts int ID to 'uid://' string. Returns empty if invalid."
+      int
+    
+    text_to_id[1]{text_id} int
+      @description "Parses 'uid://' string to int ID. Returns INVALID_ID if malformed."
+      String
+    
+    add_id[2]{id, path} void
+      @description "Registers ID. CRITICAL: Throws error if ID exists. Use has_id() first."
+      int, String
+    
+    set_id[2]{id, path} void
+      @description "Updates path for ID. Throws error if ID does not exist."
+      int, String
+    
+    has_id[1]{id} bool
+      @description "O(1) lookup. Use before add_id to prevent crashes."
+      int
+    
+    get_id_path[1]{id} String
+      @description "Returns registered path. Warning: Path may not exist on disk."
+      int
+    
+    create_id int
+      @description "Generates a new, unique random ID."
+
+@# =============================================================================
+@# NAVIGATION SYSTEM
+@# =============================================================================
+
+@class NavigationServer2D
+  @extends Object
+  @singleton true
+  @sync_model "Asynchronous (Physics Frame)"
+  @description "Low-level navigation server. Requires synchronization awareness."
+
+  @signals
+    map_changed[1]{map}
+      @description "Emitted on background thread sync completion. Safe to query paths now."
+      RID
+
+  @methods
+    # MAP_MANAGEMENT
+    map_create RID
+      @return "New Map RID. Isolated navigation world."
+    
+    map_set_active[2]{map, active} void
+      @description "Activates map for processing. Inactive maps save CPU."
+      RID, bool
+    
+    map_get_path[3]{map, origin, destination, optimize, navigation_layers} PackedVector2Array
+      @description "Queries path. Returns EMPTY if called before sync (await physics_frame)."
+      RID, Vector2, Vector2, bool, int
+      @default_args true, 1
+
+    map_force_update[1]{map} void
+      @description "BLOCKING call. Forces sync on main thread. Causes frame freeze. Debug only."
+      RID
+
+    # REGION_CHUNK_MANAGEMENT
+    region_create RID
+      @return "New Region RID (Chunk)"
+    
+    region_set_map[2]{region, map} void
+      @description "Assigns chunk to map. Triggers 'dirty' state. Wait for map_changed."
+      RID, RID
+    
+    region_set_navigation_polygon[2]{region, polygon} void
+      @description "Sets mesh data. Expensive operation."
+      RID, NavigationPolygon
+    
+    region_set_transform[2]{region, transform} void
+      @description "Moves chunk. High performance for streaming worlds."
+      RID, Transform2D
+    
+    region_set_use_edge_connections[2]{region, enabled} void
+      @description "Enables vertex welding. True = agents cross chunks. False = isolated."
+      RID, bool
+    
+    region_owns_point[2]{region, point} bool
+      @description "Hit test for region."
+      RID, Vector2
+
+@# =============================================================================
+@# THREADING SYSTEM
+@# =============================================================================
+
+@class WorkerThreadPool
+  @extends Object
+  @singleton true
+  @description "Managed thread pool for task and data parallelism. 16KB-aligned stack."
+
+  @methods
+    add_group_task[4]{action, elements, tasks_needed, high_priority} int
+      @description "Data Parallelism. 'action' callable must take (int index)."
+      Callable, int, int, bool
+      @default_args -1, false
+      @return "Group Task ID"
+    
+    add_task[5]{action, high_priority, description} int
+      @description "Task Parallelism. Single unit of work."
+      Callable, bool, String
+      @default_args false, ""
+      @return "Task ID"
+      
+    is_task_completed[1]{task_id} bool
+      int
+      
+    wait_for_task_completion[1]{task_id} void
+      @description "Blocks calling thread until task finishes. Can cause deadlocks if recursive."
+      int
+      
+    get_task_id int
+      @description "Returns ID if on worker thread. Returns -1 if on main thread. Use for safety checks."
+
+@# =============================================================================
+@# RENDERING SYSTEM
+@# =============================================================================
+
+@class RDPipelineDepthStencilState
+  @extends RefCounted
+  @description "Pipeline state for depth/stencil tests."
+
+  @properties
+    enable_stencil bool
+    front_op_compare int "CompareOperator enum"
+    front_op_fail int "StencilOperation enum"
+    front_op_pass int "StencilOperation enum"
+    front_op_depth_fail int "StencilOperation enum"
+    front_op_reference int "Reference value for comparison"
+    back_op_compare int
+    back_op_fail int
+    back_op_pass int
+    back_op_depth_fail int
+    back_op_reference int

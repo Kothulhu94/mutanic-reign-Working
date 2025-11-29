@@ -1,7 +1,7 @@
 extends Control
 class_name LootUI
 
-signal loot_closed(target_actor: Node2D)
+signal loot_closed(target_actor)
 
 @onready var title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var player_name_label: Label = $MarginContainer/VBoxContainer/ContentContainer/LeftPanel/PlayerNameLabel
@@ -14,7 +14,7 @@ signal loot_closed(target_actor: Node2D)
 var player_actor: Node2D = null
 var target_actor: Node2D = null
 
-var loot_cart: Dictionary = {}  # item_id -> quantity to take
+var loot_cart: Dictionary = {} # item_id -> quantity to take
 var last_clicked_item: StringName = StringName()
 
 var player_row_nodes: Dictionary = {}

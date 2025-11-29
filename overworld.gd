@@ -9,7 +9,7 @@ extends Node2D
 @export var chunk_size: Vector2i = Vector2i(512, 512)
 @export var bus_spawn_point: Vector2 = Vector2(125, 125)
 
-const NAV_LAYERS: int = 1  # keep in lockstep with the NavigationAgent2D
+const NAV_LAYERS: int = 1 # keep in lockstep with the NavigationAgent2D
 
 # How close to a waypoint counts as "consumed"
 @export var path_trim_tolerance: float = 12.0
@@ -17,7 +17,7 @@ const NAV_LAYERS: int = 1  # keep in lockstep with the NavigationAgent2D
 # Caravan system
 @export var item_db: ItemDB
 @export var caravan_types: Array[CaravanType] = []
-@export var caravan_spawn_interval: float = 30.0  # Check for spawning every 30 seconds
+@export var caravan_spawn_interval: float = 30.0 # Check for spawning every 30 seconds
 var caravan_spawn_timer: float = 0.0
 var active_caravans: Array[Caravan] = []
 var _caravan_type_counters: Dictionary = {}
@@ -332,7 +332,7 @@ func _try_spawn_caravan_from_hub(home_hub: Hub, all_hubs: Array[Hub]) -> void:
 		# Increase threshold for next spawn by 5x
 		caravan_threshold_multipliers[key] = threshold_multiplier * 5.0
 
-		break  # Only spawn one caravan per hub per check
+		break # Only spawn one caravan per hub per check
 
 func _hub_has_surplus_for_type(hub: Hub, caravan_type: CaravanType, threshold_multiplier: float = 1.0) -> bool:
 	if hub == null or hub.item_db == null or caravan_type == null:
@@ -436,7 +436,7 @@ func _on_timekeeper_resumed() -> void:
 # Combat System Callbacks
 # -------------------------------------------------------------------
 func _on_chase_started() -> void:
-	pass  # Pathline will update automatically during chase
+	pass # Pathline will update automatically during chase
 
 func _on_chase_initiated(target_actor: Node2D) -> void:
 	if _player_bus != null and bus != null:
@@ -476,7 +476,7 @@ func _on_encounter_exit() -> void:
 	if _encounter_ui != null:
 		_encounter_ui.close_ui()
 
-func _on_loot_closed(_target_actor: Node2D) -> void:
+func _on_loot_closed(_target_actor) -> void:
 	# Free the target actor now that looting is complete
 	if _target_actor != null and _target_actor != _player_bus:
 		_target_actor.queue_free()
