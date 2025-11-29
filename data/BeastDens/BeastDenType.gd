@@ -29,3 +29,6 @@ class_name BeastDenType extends Resource
 
 ## Maximum number of beasts this den can have active at once (0 = unlimited)
 @export var max_active_beasts: int = 10
+
+## Radius of the navigation obstacle/hole for this den type
+@export var obstacle_radius: float = 45.0

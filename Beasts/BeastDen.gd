@@ -5,7 +5,7 @@ class_name BeastDen extends Area2D
 ## Spawns beasts on a tick-based interval
 
 @export var den_type: BeastDenType
-@export var obstacle_radius: float = 45.0  # Circular obstacle for smooth agent sliding (< 60 to allow encounters)
+@export var obstacle_radius: float = 45.0 # Circular obstacle for smooth agent sliding (< 60 to allow encounters)
 
 ## Combat integration - allows dens to be attacked
 var charactersheet: CharacterSheet
@@ -41,7 +41,7 @@ func _ready() -> void:
 		if not tk.is_connected("tick", Callable(self, "_on_timekeeper_tick")):
 			tk.connect("tick", Callable(self, "_on_timekeeper_tick"))
 
-	_create_navigation_obstacle()
+	_setup_navigation_blocking()
 
 func _initialize_charactersheet() -> void:
 	if den_type == null:
@@ -49,15 +49,85 @@ func _initialize_charactersheet() -> void:
 
 	charactersheet = CharacterSheet.new()
 	charactersheet.base_health = den_type.base_health
-	charactersheet.base_damage = -59  # Negative damage so den can never harm player (even with max roll)
+	charactersheet.base_damage = -59 # Negative damage so den can never harm player (even with max roll)
 	charactersheet.base_defense = den_type.base_defense
 	charactersheet.initialize_health()
 
-func _create_navigation_obstacle() -> void:
-	# NOTE: NavigationObstacle2D disabled for dens to allow encounter triggering
-	# The collision shape is enough to prevent overlap
-	# Avoidance was preventing Bus from getting within encounter distance (60px)
-	pass
+func _setup_navigation_blocking() -> void:
+	# Determine radius from type or fallback to local export
+	var radius := obstacle_radius
+	if den_type != null:
+		radius = den_type.obstacle_radius
+
+	# Create StaticBody2D for physical collision
+	var static_body := StaticBody2D.new()
+	static_body.name = "NavigationBlocker"
+	add_child(static_body)
+	
+	var collision_shape := CollisionShape2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = radius
+	collision_shape.shape = circle
+	static_body.add_child(collision_shape)
+	
+	# Wait for scene tree
+	await get_tree().physics_frame
+	
+	# Carve navigation hole
+	_carve_navigation_hole(radius)
+
+func _carve_navigation_hole(radius: float) -> void:
+	var nav_region: NavigationRegion2D = _find_containing_navigation_region()
+	
+	if nav_region != null:
+		# Backup original geometry first (only once per region)
+		NavigationBackup.backup_region(nav_region)
+		
+		# Carve the hole
+		var success := NavigationCarver.carve_circle(
+			nav_region,
+			global_position,
+			radius
+		)
+		
+		if success:
+			print("[BeastDen] Carved navigation hole at: ", global_position, " with radius: ", radius)
+		else:
+			print("[BeastDen] Failed to carve navigation hole")
+	else:
+		print("[BeastDen] No NavigationRegion2D found for position: ", global_position)
+
+func _find_containing_navigation_region() -> NavigationRegion2D:
+	# Get all NavigationRegion2D nodes in the scene
+	var regions: Array[NavigationRegion2D] = []
+	if overworld != null:
+		_find_all_nav_regions(overworld, regions)
+	
+	# Find the one that actually contains our position
+	for region in regions:
+		if region.navigation_polygon == null:
+			continue
+			
+		var local_pos := region.to_local(global_position)
+		var poly := region.navigation_polygon
+		
+		# Check if point is inside any of the outlines
+		# Note: This assumes the outer boundary is the containment check. 
+		# Complex polygons with holes might require more robust checks, 
+		# but usually checking the largest outline or any outline is a good start.
+		for i in range(poly.get_outline_count()):
+			var outline := poly.get_outline(i)
+			if Geometry2D.is_point_in_polygon(local_pos, outline):
+				return region
+				
+	return null
+
+func _find_all_nav_regions(node: Node, result: Array[NavigationRegion2D]) -> void:
+	if node is NavigationRegion2D:
+		result.append(node)
+	
+	for child in node.get_children():
+		_find_all_nav_regions(child, result)
 
 ## Called automatically by Timekeeper each game tick
 func _on_timekeeper_tick(_dt: float) -> void:
@@ -173,5 +243,10 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 			get_viewport().set_input_as_handled()
 
 func _remove_den() -> void:
+	# Restore navigation when den is destroyed
+	var nav_region: NavigationRegion2D = _find_containing_navigation_region()
+	if nav_region != null:
+		NavigationBackup.restore_region(nav_region)
+	
 	den_destroyed.emit(self)
 	queue_free()
