@@ -7,14 +7,14 @@ extends Node2D
 # ---- Inputs ----
 @export var texture: Texture2D
 @export var chunk_size: Vector2i = Vector2i(512, 512)
-@export var top_left_world: Vector2 = Vector2.ZERO   # top-left world position
+@export var top_left_world: Vector2 = Vector2.ZERO # top-left world position
 
 # Navigation settings for all chunks
 @export var nav_layers: int = 1
 @export var nav_travel_cost: float = 1.0
 @export var nav_enter_cost: float = 0.0
 @export var nav_use_edge_connections: bool = true
-@export var nav_prefill_rect: bool = true            # prefill each region as a full rect
+@export var nav_prefill_rect: bool = true # prefill each region as a full rect
 
 # PNG baker settings
 @export var target_folder: String = "res://chunks"
@@ -104,8 +104,8 @@ func _generate() -> void:
 			if nav_prefill_rect:
 				# Build a rectangular nav polygon with four editable corner points.
 				var navpoly := NavigationPolygon.new()
-				navpoly.resource_local_to_scene = true     # keep unique + editable in this scene
-				navpoly.agent_radius = 0.0                 # remove auto offset
+				navpoly.resource_local_to_scene = true # keep unique + editable in this scene
+				navpoly.agent_radius = 0.0 # remove auto offset
 				navpoly.add_outline(PackedVector2Array([
 					Vector2(0, 0),
 					Vector2(rsize.x, 0),
@@ -151,16 +151,28 @@ func _bake_images() -> void:
 				push_error("Chunker: save_png failed for %s" % file_path)
 	print("Chunker: baked PNGs to %s" % target_folder)
 
-# ---- Repoint Sprites to baked PNGs ----
+# ---- Repoint Sprites to AtlasTextures (OPTIMIZED) ----
 func _repoint_textures() -> void:
-	# Walk Sprite children and point them at imported PNGs if present.
+	# Walk Sprite children and point them at AtlasTexture resources for memory optimization.
+	# AtlasTextures reference the compressed atlas, avoiding loading 256 separate textures into VRAM.
+	var atlas_folder := "res://resources/map_chunks"
+	
 	for n in get_children():
 		if n is Sprite2D and n.name.begins_with("Sprite_"):
 			var parts := n.name.split("_")
 			if parts.size() >= 3:
 				var cx := parts[1].to_int()
 				var cy := parts[2].to_int()
-				var file_path := "%s/%s_%d_%d.png" % [target_folder, file_prefix, cx, cy]
-				if ResourceLoader.exists(file_path):
-					n.texture = load(file_path)
-	print("Chunker: repointed sprites to PNGs (if they exist).")
+				
+				# Try AtlasTexture first (memory-optimized path)
+				var atlas_path := "%s/chunk_%d_%d.tres" % [atlas_folder, cx, cy]
+				if ResourceLoader.exists(atlas_path):
+					n.texture = load(atlas_path)
+					continue
+				
+				# Fallback to PNG if .tres not found (backwards compatibility)
+				var png_path := "%s/%s_%d_%d.png" % [target_folder, file_prefix, cx, cy]
+				if ResourceLoader.exists(png_path):
+					n.texture = load(png_path)
+	
+	print("Chunker: repointed sprites to AtlasTextures (memory optimized).")

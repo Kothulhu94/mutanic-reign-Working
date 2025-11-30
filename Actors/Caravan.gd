@@ -1,5 +1,5 @@
 # uid://b2iyabtka0f3x
-# Godot 4.5 — Caravan Trading AI
+# Godot 4.5 — Caravan Trading AI (Refactored)
 # Spawns when home hub has surplus (200+ items over need)
 # Buys preferred items at home, travels to other hubs to sell for profit
 # Returns home to pay 10% tax and restock if surplus exists
@@ -15,6 +15,40 @@ var home_hub: Hub = null
 var current_target_hub: Hub = null
 var _is_paused: bool = false
 
+# Components
+var navigator: CaravanNavigator
+var skill_system: CaravanSkillSystem
+var trading_system: CaravanTradingSystem
+
+# Health visual
+var _health_visual: Control
+
+# AI State machine
+enum State {
+	IDLE, # Waiting at home hub
+	BUYING_AT_HOME, # Purchasing goods from home hub
+	TRAVELING, # Moving to destination
+	EVALUATING_TRADE, # At destination, checking prices
+	SELLING, # Selling goods at destination
+	WAITING_TO_SELL, # Waiting at hub before selling at loss
+	SEEKING_NEXT_HUB, # Looking for another profitable hub
+	RETURNING_HOME # Going back to home hub
+}
+var current_state: State = State.IDLE
+var _wait_timer: float = 0.0
+const WAIT_TIMEOUT: float = 60.0
+
+# Configuration (set from EconomyConfig)
+@export var surplus_threshold: float = 200.0 # Items over need to trigger spawn
+@export var home_tax_rate: float = 0.1 # 10% of carried money goes to hub
+
+# Navigation
+@export var movement_speed: float = 100.0
+
+# References
+var item_db: ItemDB = null
+var all_hubs: Array[Hub] = []
+
 ## Computed property for combat system compatibility
 var charactersheet: CharacterSheet:
 	get:
@@ -22,55 +56,18 @@ var charactersheet: CharacterSheet:
 			return caravan_state.leader_sheet
 		return null
 
-# Health visual
-var _health_visual: Control
-
-# Skill-based bonuses (calculated once at setup)
-var _price_modifier_bonus: float = 0.0  # From NegotiationTactics skill
-var _speed_bonus: float = 0.0           # From CaravanLogistics skill
-var _capacity_bonus: float = 0.0        # From CaravanLogistics skill
-
-# AI State machine
-enum State {
-	IDLE,              # Waiting at home hub
-	BUYING_AT_HOME,    # Purchasing goods from home hub
-	TRAVELING,         # Moving to destination
-	EVALUATING_TRADE,  # At destination, checking prices
-	SELLING,           # Selling goods at destination
-	WAITING_TO_SELL,   # Waiting at hub before selling at loss
-	SEEKING_NEXT_HUB,  # Looking for another profitable hub
-	RETURNING_HOME     # Going back to home hub
-}
-var current_state: State = State.IDLE
-var _wait_timer: float = 0.0
-const WAIT_TIMEOUT: float = 60.0
-
-# Configuration (set from EconomyConfig)
-@export var surplus_threshold: float = 200.0  # Items over need to trigger spawn
-@export var home_tax_rate: float = 0.1        # 10% of carried money goes to hub
-
-# Navigation
-@export var movement_speed: float = 100.0
-var nav_agent: NavigationAgent2D = null
-var _safe_velocity: Vector2 = Vector2.ZERO
-
-# References
-var item_db: ItemDB = null
-var all_hubs: Array[Hub] = []
-var visited_hubs: Array[Hub] = []
-
-# Trade tracking
-var purchase_prices: Dictionary = {}  # item_id -> price paid per unit
-
 func _ready() -> void:
 	add_to_group("caravans")
 
-	# Get NavigationAgent2D reference
-	nav_agent = get_node_or_null("NavigationAgent2D") as NavigationAgent2D
-
-	# Connect to NavigationAgent2D avoidance system
-	if nav_agent != null:
-		nav_agent.velocity_computed.connect(_on_velocity_computed)
+	# Initialize components
+	navigator = CaravanNavigator.new()
+	add_child(navigator)
+	
+	skill_system = CaravanSkillSystem.new()
+	add_child(skill_system)
+	
+	trading_system = CaravanTradingSystem.new()
+	add_child(trading_system)
 
 	# Connect input event signal for clicking
 	input_event.connect(_on_input_event)
@@ -93,9 +90,6 @@ func setup(home: Hub, state: CaravanState, db: ItemDB, hubs: Array[Hub]) -> void
 	if caravan_state != null and caravan_state.leader_sheet != null:
 		caravan_state.leader_sheet.initialize_health()
 
-		# Initialize Trading skills
-		_initialize_trading_skills()
-
 		# Set up health visual
 		var health_visual_scene: PackedScene = preload("res://UI/ActorHealthVisual.tscn")
 		_health_visual = health_visual_scene.instantiate() as Control
@@ -105,17 +99,22 @@ func setup(home: Hub, state: CaravanState, db: ItemDB, hubs: Array[Hub]) -> void
 			caravan_state.leader_sheet.health_changed.connect(_on_health_changed)
 			_on_health_changed(caravan_state.leader_sheet.current_health, caravan_state.leader_sheet.get_effective_health())
 
-		# Apply skill bonuses if leader has skills
-		_apply_skill_bonuses()
-
-	# Configure navigation from CaravanType
+	# Setup components
+	skill_system.setup(caravan_state)
+	trading_system.setup(caravan_state, item_db, skill_system, all_hubs, surplus_threshold)
+	
+	# Apply speed bonuses
+	var final_speed: float = movement_speed
 	if caravan_state.caravan_type != null:
-		movement_speed *= caravan_state.caravan_type.speed_modifier
-
-		# Configure NavigationAgent2D from CaravanType
-		if nav_agent != null:
-			nav_agent.max_speed = movement_speed
-			nav_agent.navigation_layers = caravan_state.caravan_type.navigation_layers
+		final_speed *= caravan_state.caravan_type.speed_modifier
+	if skill_system:
+		final_speed *= (1.0 + skill_system.speed_bonus)
+	
+	var nav_agent: NavigationAgent2D = get_node_or_null("NavigationAgent2D") as NavigationAgent2D
+	navigator.setup(self, nav_agent, final_speed)
+	
+	if caravan_state.caravan_type != null:
+		navigator.set_navigation_layers(caravan_state.caravan_type.navigation_layers)
 
 	# Position at home hub
 	global_position = home.global_position
@@ -153,444 +152,97 @@ func _transition_to(new_state: State) -> void:
 	current_state = new_state
 	match new_state:
 		State.TRAVELING:
-			_start_navigation_to(current_target_hub)
+			if current_target_hub:
+				navigator.set_target_position(current_target_hub.global_position)
 		State.RETURNING_HOME:
-			_start_navigation_to(home_hub)
+			if home_hub:
+				navigator.set_target_position(home_hub.global_position)
 
 func _state_idle() -> void:
-	# Check if home hub has any available preferred items to continue trading
-	if _home_has_available_preferred_items():
+	if trading_system.home_has_available_preferred_items(home_hub):
 		_transition_to(State.BUYING_AT_HOME)
 
 func _state_buying_at_home() -> void:
-	# Spend all money on any available preferred items
-	var items_to_buy: Dictionary = _get_available_preferred_items(home_hub)
-
-	var _total_bought: int = 0  # Track total items bought (reserved for future use)
-	for item_id: StringName in items_to_buy.keys():
-		var available: int = items_to_buy[item_id]
-		var price: float = home_hub.get_item_price(item_id)
-		var max_affordable: int = int(floor(float(caravan_state.money) / price))
-		var amount_to_buy: int = mini(available, max_affordable)
-		amount_to_buy = mini(amount_to_buy, _get_effective_max_capacity() - caravan_state.get_total_cargo_weight())
-
-		if amount_to_buy > 0:
-			var total_cost: int = int(ceil(price * float(amount_to_buy)))
-			if home_hub.buy_from_hub(item_id, amount_to_buy, caravan_state):
-				caravan_state.money -= total_cost
-				caravan_state.add_item(item_id, amount_to_buy)
-				purchase_prices[item_id] = price
-				_total_bought += amount_to_buy
-
-				# Award XP for market_analysis (trading_goods)
-				_award_skill_xp(&"market_analysis", float(total_cost))
-
-	# Find a destination hub
+	var _bought: int = trading_system.buy_items_at_home(home_hub)
+	
 	if caravan_state.inventory.size() > 0:
-		_find_next_destination()
+		current_target_hub = trading_system.find_next_destination(home_hub)
 		if current_target_hub != null:
 			_transition_to(State.TRAVELING)
 		else:
-			# No destination found, return to idle
 			_transition_to(State.IDLE)
 	else:
-		# Couldn't buy anything
 		_transition_to(State.IDLE)
 
 func _state_traveling(delta: float) -> void:
-	if nav_agent == null:
-		return
-
-	# Check if we've reached the destination
-	if nav_agent.is_navigation_finished():
+	if navigator.is_navigation_finished():
 		if current_target_hub != null:
 			_transition_to(State.EVALUATING_TRADE)
 		return
-
-	# Calculate desired velocity and pass to avoidance system
-	var next_position: Vector2 = nav_agent.get_next_path_position()
-	var direction: Vector2 = (next_position - global_position).normalized()
-	var desired_velocity: Vector2 = direction * movement_speed
-	nav_agent.set_velocity(desired_velocity)
-
-	# Use safe velocity from avoidance system
-	global_position += _safe_velocity * delta
+		
+	navigator.update_movement(delta)
 
 func _state_evaluating_trade() -> void:
-	# Mark this hub as visited (whether we sell or not)
-	if current_target_hub != null and not visited_hubs.has(current_target_hub):
-		visited_hubs.append(current_target_hub)
-
-	# Check prices at current hub and decide whether to sell
-	var has_profitable_items: bool = false
-
-	for item_id: StringName in caravan_state.inventory.keys():
-		var purchase_price: float = purchase_prices.get(item_id, 0.0)
-		var base_sell_price: float = current_target_hub.get_item_price(item_id)
-
-		# Apply skill bonus: better negotiation = higher effective sell price
-		var price_modifier: float = 1.0 - _price_modifier_bonus
-		var sell_price: float = base_sell_price / price_modifier
-
-		if sell_price > purchase_price:
-			has_profitable_items = true
-			break
-
-	if has_profitable_items:
+	var profitable: bool = trading_system.evaluate_trade_at_hub(current_target_hub)
+	
+	if profitable:
 		_transition_to(State.SELLING)
 	else:
-		# No profit here, wait before selling at a loss
 		_wait_timer = 0.0
 		_transition_to(State.WAITING_TO_SELL)
 
 func _state_selling() -> void:
-	# Sell all profitable items
-	var items_to_sell: Array[StringName] = []
-
-	# Build list first to avoid modifying dictionary during iteration
-	for item_id: StringName in caravan_state.inventory.keys():
-		items_to_sell.append(item_id)
-
-	for item_id: StringName in items_to_sell:
-		var purchase_price: float = purchase_prices.get(item_id, 0.0)
-		var base_sell_price: float = current_target_hub.get_item_price(item_id)
-
-		# Apply skill bonus: better negotiation = higher effective sell price
-		var price_modifier: float = 1.0 - _price_modifier_bonus
-		var sell_price: float = base_sell_price / price_modifier
-
-		if sell_price > purchase_price:
-			var amount: int = caravan_state.inventory.get(item_id, 0)
-			if amount > 0:
-				var revenue: int = int(floor(sell_price * float(amount)))
-				if current_target_hub.sell_to_hub(item_id, amount, caravan_state):
-					var profit: int = revenue - int(purchase_price * float(amount))
-					caravan_state.money += revenue
-					caravan_state.profit_this_trip += profit
-					caravan_state.remove_item(item_id, amount)
-
-					# Award XP for market_analysis (trading_goods)
-					_award_skill_xp(&"market_analysis", float(revenue))
-
-					# Award XP for negotiation_tactics (negotiating_deals)
-					_award_skill_xp(&"negotiation_tactics", float(profit))
-
-					# Award XP for master_merchant (profitable_trade_completed)
-					_award_skill_xp(&"master_merchant", float(profit))
-
-					# Award XP for market_monopoly (controlling_markets)
-					# When selling >50 units (representing market dominance)
-					if amount > 50:
-						_award_skill_xp(&"market_monopoly", float(revenue))
-
-	# Mark this hub as visited
-	if not visited_hubs.has(current_target_hub):
-		visited_hubs.append(current_target_hub)
-
-	# After selling, always return home to buy fresh goods
+	trading_system.sell_items_at_hub(current_target_hub, false)
 	_transition_to(State.RETURNING_HOME)
 
 func _state_waiting_to_sell(delta: float) -> void:
-	# Wait at hub, then sell everything at a loss if timeout expires
 	_wait_timer += delta
-
 	if _wait_timer >= WAIT_TIMEOUT:
-		# Timeout reached - sell everything at current prices (even at a loss)
-		_sell_all_items()
+		trading_system.sell_items_at_hub(current_target_hub, true) # Force sell
 		_transition_to(State.RETURNING_HOME)
-
-func _sell_all_items() -> void:
-	# Sell all items at current hub prices regardless of profit/loss
-	var items_to_sell: Array[StringName] = []
-
-	for item_id: StringName in caravan_state.inventory.keys():
-		items_to_sell.append(item_id)
-
-	for item_id: StringName in items_to_sell:
-		var amount: int = caravan_state.inventory.get(item_id, 0)
-		if amount > 0 and current_target_hub != null:
-			var sell_price: float = current_target_hub.get_item_price(item_id)
-			var revenue: int = int(floor(sell_price * float(amount)))
-
-			if current_target_hub.sell_to_hub(item_id, amount, caravan_state):
-				var purchase_price: float = purchase_prices.get(item_id, 0.0)
-				var profit: int = revenue - int(purchase_price * float(amount))
-
-				caravan_state.money += revenue
-				caravan_state.profit_this_trip += profit
-				caravan_state.remove_item(item_id, amount)
-
-				# Award XP for market_analysis
-				_award_skill_xp(&"market_analysis", float(revenue))
 
 func _state_seeking_next_hub() -> void:
-	# Check if we've visited all available hubs
-	var non_home_hubs: int = 0
-	for hub: Hub in all_hubs:
-		if hub != home_hub:
-			non_home_hubs += 1
-
-	# If we've visited all hubs and still have inventory, return home to get fresh goods
-	if visited_hubs.size() >= non_home_hubs:
+	# This state seems redundant if we always return home after selling (as per original logic line 291)
+	# But original code had logic for it.
+	# Original logic: check if visited all hubs. If so, return home. Else find next.
+	var visited_count: int = trading_system.get_visited_count_excluding(home_hub)
+	var total_hubs: int = trading_system.get_total_hubs_excluding(home_hub)
+	
+	if visited_count >= total_hubs:
 		_transition_to(State.RETURNING_HOME)
 		return
-
-	# Try to find another hub to sell remaining goods
-	_find_next_destination()
-
-	if current_target_hub != null and current_target_hub != home_hub:
+		
+	current_target_hub = trading_system.find_next_destination(home_hub)
+	if current_target_hub != null:
 		_transition_to(State.TRAVELING)
 	else:
-		# No more hubs or only home hub left, return home
 		_transition_to(State.RETURNING_HOME)
 
 func _state_returning_home(delta: float) -> void:
-	if nav_agent == null:
-		return
-
-	# Check if we've reached home
-	if nav_agent.is_navigation_finished():
+	if navigator.is_navigation_finished():
 		_arrive_at_home()
 		return
-
-	# Calculate desired velocity and pass to avoidance system
-	var next_position: Vector2 = nav_agent.get_next_path_position()
-	var direction: Vector2 = (next_position - global_position).normalized()
-	var desired_velocity: Vector2 = direction * movement_speed
-	nav_agent.set_velocity(desired_velocity)
-
-	# Use safe velocity from avoidance system
-	global_position += _safe_velocity * delta
-
-# ============================================================
-# AI Helpers
-# ============================================================
-func _home_has_surplus_of_preferred_items() -> bool:
-	if home_hub == null or caravan_state == null or caravan_state.caravan_type == null:
-		return false
-
-	var items: Dictionary = _get_preferred_items_with_surplus(home_hub)
-	return items.size() > 0
-
-func _home_has_available_preferred_items() -> bool:
-	if home_hub == null or caravan_state == null or caravan_state.caravan_type == null:
-		return false
-
-	if caravan_state.money <= 0:
-		return false
-
-	var items: Dictionary = _get_available_preferred_items(home_hub)
-	return items.size() > 0
-
-func _get_preferred_items_with_surplus(hub: Hub) -> Dictionary:
-	var result: Dictionary = {}
-
-	if hub == null or item_db == null or caravan_state == null or caravan_state.caravan_type == null:
-		return result
-
-	var preferred_tags: Array[StringName] = caravan_state.caravan_type.preferred_tags
-	if preferred_tags.is_empty():
-		return result
-
-	for item_id: StringName in hub.state.inventory.keys():
-		var stock: int = hub.state.inventory.get(item_id, 0)
-		if stock <= 0:
-			continue
-
-		# Check if item has any preferred tag
-		var has_preferred_tag: bool = false
-		for tag: StringName in preferred_tags:
-			if item_db.has_tag(item_id, tag):
-				has_preferred_tag = true
-				break
-
-		if not has_preferred_tag:
-			continue
-
-		# Check if hub has surplus (stock > need + threshold)
-		# For simplicity, we check if food_level or infrastructure_level is positive
-		# and stock is above threshold
-		var surplus: float = 0.0
-		if item_db.has_tag(item_id, &"food"):
-			surplus = hub.food_level
-		elif item_db.has_tag(item_id, &"material"):
-			surplus = hub.infrastructure_level
-
-		# If hub has positive level and stock is above threshold, it's surplus
-		if surplus > 0.0 and float(stock) > surplus_threshold:
-			result[item_id] = stock - int(surplus_threshold)
-
-	return result
-
-func _get_available_preferred_items(hub: Hub) -> Dictionary:
-	var result: Dictionary = {}
-
-	if hub == null or item_db == null or caravan_state == null or caravan_state.caravan_type == null:
-		return result
-
-	var preferred_tags: Array[StringName] = caravan_state.caravan_type.preferred_tags
-	if preferred_tags.is_empty():
-		return result
-
-	for item_id: StringName in hub.state.inventory.keys():
-		var stock: int = hub.state.inventory.get(item_id, 0)
-		if stock <= 0:
-			continue
-
-		# Check if item has any preferred tag
-		var has_preferred_tag: bool = false
-		for tag: StringName in preferred_tags:
-			if item_db.has_tag(item_id, tag):
-				has_preferred_tag = true
-				break
-
-		if has_preferred_tag:
-			result[item_id] = stock
-
-	return result
-
-func _find_next_destination() -> void:
-	current_target_hub = null
-
-	# Filter out visited hubs and home hub
-	var available_hubs: Array[Hub] = []
-	for hub: Hub in all_hubs:
-		if hub == home_hub:
-			continue
-		if visited_hubs.has(hub):
-			continue
-		available_hubs.append(hub)
-
-	# If no unvisited hubs remain, clear visited list and try again (allows ping-pong between 2 hubs)
-	if available_hubs.is_empty():
-		visited_hubs.clear()
-		for hub: Hub in all_hubs:
-			if hub != home_hub:
-				available_hubs.append(hub)
-
-	# Pick the first available hub
-	if available_hubs.size() > 0:
-		current_target_hub = available_hubs[0]
+		
+	navigator.update_movement(delta)
 
 func _arrive_at_home() -> void:
-	# Calculate total trip value before paying tax
+	# Awards and tax
 	var trip_profit: int = caravan_state.profit_this_trip
-
-	# Award XP for established_routes (trade_route_completed)
-	# Based on total value of the completed route
 	var route_value: float = float(caravan_state.money + trip_profit)
-	_award_skill_xp(&"established_routes", route_value)
-
-	# Award XP for caravan_logistics (managing_caravans)
-	# Based on route management efficiency
-	_award_skill_xp(&"caravan_logistics", route_value)
-
-	# Award XP for economic_dominance if profit > 1000 PACs
+	
+	skill_system.award_xp(&"established_routes", route_value)
+	skill_system.award_xp(&"caravan_logistics", route_value)
+	
 	if trip_profit > 1000:
-		_award_skill_xp(&"economic_dominance", float(trip_profit))
-
-	# Pay 10% tax on carried money
+		skill_system.award_xp(&"economic_dominance", float(trip_profit))
+		
 	if caravan_state.money > 0:
 		var tax: int = int(ceil(float(caravan_state.money) * home_tax_rate))
 		caravan_state.money -= tax
 		home_hub.state.money += tax
-
-	# Reset for next trip
-	caravan_state.profit_this_trip = 0
-	visited_hubs.clear()
-	purchase_prices.clear()
-	caravan_state.flip_leg()
-
-	# Check if we can start another trade run
+		
+	trading_system.reset_trip()
 	_transition_to(State.IDLE)
-
-# ============================================================
-# Skill Effects Application
-# ============================================================
-## Get effective max capacity with all skill bonuses applied
-func _get_effective_max_capacity() -> int:
-	if caravan_state == null or caravan_state.caravan_type == null:
-		return 1000
-
-	var base: int = caravan_state.caravan_type.base_capacity
-	return int(float(base) * (1.0 + _capacity_bonus))
-
-## Apply all relevant Trading skill bonuses from leader's character sheet
-func _apply_skill_bonuses() -> void:
-	if caravan_state == null or caravan_state.leader_sheet == null:
-		return
-
-	var sheet: CharacterSheet = caravan_state.leader_sheet
-
-	# Reset bonuses
-	_price_modifier_bonus = 0.0
-	_speed_bonus = 0.0
-	_capacity_bonus = 0.0
-	var base_movement_speed: float = movement_speed
-
-	# Reset movement speed to base (from CaravanType)
-	if caravan_state.caravan_type != null:
-		movement_speed = 100.0 * caravan_state.caravan_type.speed_modifier
-		base_movement_speed = movement_speed
-
-	# Apply NegotiationTactics skill (trade_price_bonus)
-	var negotiation_spec: SkillSpec = sheet.get_skill_spec(&"negotiation_tactics")
-	if negotiation_spec != null and negotiation_spec.current_rank > 0:
-		var negotiation_skill: Skill = Skills.get_skill(&"negotiation_tactics")
-		if negotiation_skill != null:
-			_price_modifier_bonus = negotiation_skill.get_effect_at_rank(negotiation_spec.current_rank)
-
-	# Apply MasterMerchant skill (trade_price_bonus) - stacks with NegotiationTactics
-	var merchant_spec: SkillSpec = sheet.get_skill_spec(&"master_merchant")
-	if merchant_spec != null and merchant_spec.current_rank > 0:
-		var merchant_skill: Skill = Skills.get_skill(&"master_merchant")
-		if merchant_skill != null:
-			_price_modifier_bonus += merchant_skill.get_effect_at_rank(merchant_spec.current_rank)
-
-	# Apply CaravanLogistics skill (caravan_efficiency: speed + capacity)
-	var logistics_spec: SkillSpec = sheet.get_skill_spec(&"caravan_logistics")
-	if logistics_spec != null and logistics_spec.current_rank > 0:
-		var logistics_skill: Skill = Skills.get_skill(&"caravan_logistics")
-		if logistics_skill != null:
-			var logistics_bonus: float = logistics_skill.get_effect_at_rank(logistics_spec.current_rank)
-			_speed_bonus = logistics_bonus
-			_capacity_bonus = logistics_bonus
-
-	# Apply EstablishedRoutes skill (caravan_inventory_bonus)
-	var routes_spec: SkillSpec = sheet.get_skill_spec(&"established_routes")
-	if routes_spec != null and routes_spec.current_rank > 0:
-		var routes_skill: Skill = Skills.get_skill(&"established_routes")
-		if routes_skill != null:
-			_capacity_bonus += routes_skill.get_effect_at_rank(routes_spec.current_rank)
-
-	# Apply EconomicDominance skill (NPC secondary effect: +100% price, +50% speed, +50% capacity)
-	var dominance_spec: SkillSpec = sheet.get_skill_spec(&"economic_dominance")
-	if dominance_spec != null and dominance_spec.current_rank > 0:
-		# NPC-specific bonuses for this Tier 3 skill
-		_price_modifier_bonus += 1.0  # +100% better prices
-		_speed_bonus += 0.5           # +50% speed
-		_capacity_bonus += 0.5        # +50% capacity
-
-	# Apply MarketMonopoly skill (NPC secondary effect: +40% price bonus)
-	var monopoly_spec: SkillSpec = sheet.get_skill_spec(&"market_monopoly")
-	if monopoly_spec != null and monopoly_spec.current_rank > 0:
-		# NPC-specific bonus
-		_price_modifier_bonus += 0.4  # +40% better prices
-
-	# Apply final bonuses
-	movement_speed = base_movement_speed * (1.0 + _speed_bonus)
-	if nav_agent != null:
-		nav_agent.max_speed = movement_speed
-
-# ============================================================
-# Navigation
-# ============================================================
-func _start_navigation_to(target_hub: Hub) -> void:
-	if target_hub == null or nav_agent == null:
-		return
-
-	# Set NavigationAgent2D target (it will use the configured navigation_layers)
-	nav_agent.target_position = target_hub.global_position
 
 # ============================================================
 # Public API
@@ -623,67 +275,7 @@ func _on_health_changed(new_health: int, max_health: int) -> void:
 
 func _on_timekeeper_paused() -> void:
 	_is_paused = true
+	navigator.stop()
 
 func _on_timekeeper_resumed() -> void:
 	_is_paused = false
-
-func _on_velocity_computed(safe_velocity: Vector2) -> void:
-	_safe_velocity = safe_velocity
-
-# ============================================================
-# Trading Skills XP System
-# ============================================================
-## Award XP to a skill based on transaction value (1 XP per 100 PACs)
-func _award_skill_xp(skill_id: StringName, value: float) -> void:
-	if caravan_state == null or caravan_state.leader_sheet == null:
-		return
-
-	var skill_spec: SkillSpec = caravan_state.leader_sheet.get_skill_spec(skill_id)
-	if skill_spec == null:
-		return
-
-	# Load the skill definition to call add_xp
-	var skill_def: Skill = Skills.get_skill(skill_id)
-	if skill_def == null:
-		return
-
-	# Calculate XP: 1 XP per 100 PACs
-	var xp_amount: float = value / 100.0
-	if xp_amount > 0.0:
-		# Update the SkillSpec's runtime values
-		skill_spec.current_xp += xp_amount
-
-		# Check for rank-up
-		while skill_spec.current_rank < skill_def.max_rank:
-			var xp_needed: int = skill_def.get_xp_for_rank(skill_spec.current_rank + 1)
-			if xp_needed <= 0 or skill_spec.current_xp < float(xp_needed):
-				break
-			# Rank up
-			skill_spec.current_xp -= float(xp_needed)
-			skill_spec.current_rank += 1
-
-			# Recalculate bonuses when skills rank up
-			_apply_skill_bonuses()
-
-# ============================================================
-# Trading Skills Initialization
-# ============================================================
-## Initialize all Trading domain skills for this caravan's leader
-func _initialize_trading_skills() -> void:
-	if caravan_state == null or caravan_state.leader_sheet == null:
-		push_error("Caravan._initialize_trading_skills: No leader sheet available")
-		return
-
-	# Add all 7 Trading skills at rank 1
-	var trading_skills: Array[StringName] = [
-		&"market_analysis",
-		&"caravan_logistics",
-		&"negotiation_tactics",
-		&"market_monopoly",
-		&"established_routes",
-		&"master_merchant",
-		&"economic_dominance"
-	]
-
-	for skill_id: StringName in trading_skills:
-		caravan_state.leader_sheet.add_skill(skill_id, Skills.database)
