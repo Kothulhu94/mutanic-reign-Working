@@ -48,7 +48,17 @@ func buy_items_at_home(home_hub: Hub) -> int:
 	
 	for item_id: StringName in items_to_buy.keys():
 		var available: int = items_to_buy[item_id]
-		var price: float = home_hub.get_item_price(item_id)
+		var base_price: float = home_hub.get_item_price(item_id)
+		
+		# Apply buy price reduction (bonus)
+		var price_modifier: float = 0.0
+		if skill_system:
+			price_modifier = skill_system.price_modifier_bonus
+			
+		var price: float = base_price * (1.0 - price_modifier)
+		# Ensure price doesn't go negative or too low
+		price = maxf(price, 0.1)
+		
 		var max_affordable: int = int(floor(float(caravan_state.money) / price))
 		var amount: int = mini(available, max_affordable)
 		
@@ -75,14 +85,15 @@ func evaluate_trade_at_hub(hub: Hub) -> bool:
 		visited_hubs.append(hub)
 		
 	var has_profit: bool = false
-	var modifier: float = 1.0
+	var bonus: float = 0.0
 	if skill_system:
-		modifier = 1.0 - skill_system.price_modifier_bonus
+		bonus = skill_system.price_modifier_bonus
 		
 	for item_id: StringName in caravan_state.inventory.keys():
 		var buy_price: float = purchase_prices.get(item_id, 0.0)
 		var base_sell: float = hub.get_item_price(item_id)
-		var sell_price: float = base_sell / modifier
+		# Sell price increase
+		var sell_price: float = base_sell * (1.0 + bonus)
 		
 		if sell_price > buy_price:
 			has_profit = true
@@ -95,9 +106,9 @@ func sell_items_at_hub(hub: Hub, force_sell: bool = false) -> void:
 	for k in caravan_state.inventory.keys():
 		items.append(k)
 		
-	var modifier: float = 1.0
+	var bonus: float = 0.0
 	if skill_system:
-		modifier = 1.0 - skill_system.price_modifier_bonus
+		bonus = skill_system.price_modifier_bonus
 		
 	for item_id in items:
 		var amount: int = caravan_state.inventory.get(item_id, 0)
@@ -105,7 +116,8 @@ func sell_items_at_hub(hub: Hub, force_sell: bool = false) -> void:
 		
 		var buy_price: float = purchase_prices.get(item_id, 0.0)
 		var base_sell: float = hub.get_item_price(item_id)
-		var sell_price: float = base_sell / modifier
+		# Sell price increase
+		var sell_price: float = base_sell * (1.0 + bonus)
 		
 		if force_sell or sell_price > buy_price:
 			var revenue: int = int(floor(sell_price * float(amount)))

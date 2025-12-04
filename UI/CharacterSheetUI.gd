@@ -23,6 +23,7 @@ var skill_list_instance: Control = null
 func _ready() -> void:
 	close_button.pressed.connect(_on_close_pressed)
 	view_skills_button.pressed.connect(_on_view_skills_pressed)
+	_setup_equipment_grid()
 	hide() # Start hidden
 
 
@@ -76,8 +77,6 @@ func display_sheet(sheet: CharacterSheet) -> void:
 	show()
 
 
-
-
 func _on_close_pressed() -> void:
 	# Also hide skills UI if it's open
 	if skill_list_instance != null:
@@ -95,8 +94,96 @@ func _on_view_skills_pressed() -> void:
 		add_child(skill_list_instance)
 
 	# Display the skills
+	# Display the skills
 	if skill_list_instance != null and skill_list_instance.has_method("display_skills"):
 		skill_list_instance.display_skills(current_sheet)
+
+	# Update equipment UI
+	_update_equipment_ui(current_sheet)
+
+# --- Equipment UI ---
+var equipment_slots: Array[Control] = []
+var equipment_grid: GridContainer
+
+func _setup_equipment_grid() -> void:
+	# Create a container for equipment
+	var container = VBoxContainer.new()
+	container.name = "EquipmentContainer"
+	add_child(container)
+	# Position it - this is a guess, might need adjustment based on scene layout
+	# Assuming stats are on the left, maybe put this on the right or below
+	container.position = Vector2(350, 50)
+	
+	var label = Label.new()
+	label.text = "Equipment"
+	label.add_theme_font_size_override("font_size", 18)
+	container.add_child(label)
+	
+	equipment_grid = GridContainer.new()
+	equipment_grid.columns = 4
+	equipment_grid.add_theme_constant_override("h_separation", 10)
+	equipment_grid.add_theme_constant_override("v_separation", 10)
+	container.add_child(equipment_grid)
+	
+	# Create 8 slots
+	# Row 1: Head, Body, Legs, Feet
+	# Row 2: Wep1, Wep2, Wep3, Wep4
+	var slot_names = ["Head", "Body", "Legs", "Feet", "Wep 1", "Wep 2", "Wep 3", "Wep 4"]
+	
+	for i in range(8):
+		var slot_panel = PanelContainer.new()
+		slot_panel.custom_minimum_size = Vector2(64, 64)
+		equipment_grid.add_child(slot_panel)
+		
+		var center = CenterContainer.new()
+		slot_panel.add_child(center)
+		
+		var slot_label = Label.new()
+		slot_label.text = slot_names[i]
+		slot_label.modulate = Color(0.5, 0.5, 0.5, 0.5)
+		center.add_child(slot_label)
+		
+		# Placeholder for item sprite
+		var item_rect = TextureRect.new()
+		item_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		item_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		item_rect.custom_minimum_size = Vector2(48, 48)
+		item_rect.name = "ItemIcon"
+		center.add_child(item_rect)
+		
+		equipment_slots.append(slot_panel)
+
+func _update_equipment_ui(sheet: CharacterSheet) -> void:
+	if equipment_slots.is_empty():
+		return
+		
+	for i in range(8):
+		var slot_panel = equipment_slots[i]
+		var center = slot_panel.get_child(0)
+		var item_rect = center.get_node("ItemIcon")
+		var slot_label = center.get_child(0) # The text label
+		
+		var item_id = sheet.get_equipped_item(i as CharacterSheet.EquipmentSlot)
+		
+		if item_id != StringName():
+			# Item equipped
+			slot_label.hide()
+			# For now, we don't have item icons, so just show text or a placeholder color
+			# If we had an ItemDB, we could get the icon
+			# item_rect.texture = ...
+			
+			# Fallback: Show item ID text
+			slot_label.text = str(item_id).substr(0, 4) # Abbreviate
+			slot_label.show()
+			slot_panel.modulate = Color(1, 1, 1) # Full brightness
+		else:
+			# Empty
+			var slot_names = ["Head", "Body", "Legs", "Feet", "Wep 1", "Wep 2", "Wep 3", "Wep 4"]
+			slot_label.text = slot_names[i]
+			slot_label.show()
+			item_rect.texture = null
+			slot_panel.modulate = Color(0.7, 0.7, 0.7) # Dimmed
+
 
 # --- Tooltip Generators ---
 
@@ -199,8 +286,8 @@ func _get_troop_bonus_entries(sheet: CharacterSheet, stat_type: String) -> Array
 
 		if bonus != 0:
 			var troop_name: String = troop_type.troop_name
-			var sign: String = "+" if bonus > 0 else ""
-			entries.append("%d %s: %s%d" % [count, troop_name, sign, bonus])
+			var bonus_sign: String = "+" if bonus > 0 else ""
+			entries.append("%d %s: %s%d" % [count, troop_name, bonus_sign, bonus])
 
 	return entries
 

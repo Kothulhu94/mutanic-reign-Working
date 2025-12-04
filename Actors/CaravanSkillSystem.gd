@@ -23,91 +23,84 @@ func recalculate_bonuses() -> void:
 		return
 		
 	var sheet: CharacterSheet = caravan_state.leader_sheet
+	var trading_state: DomainState = sheet.get_domain_state(&"Trading")
 	
 	# Reset
 	price_modifier_bonus = 0.0
 	speed_bonus = 0.0
 	capacity_bonus = 0.0
 	
-	# NegotiationTactics
-	var neg_spec: SkillSpec = sheet.get_skill_spec(&"negotiation_tactics")
-	if neg_spec != null and neg_spec.current_rank > 0:
-		var skill: Skill = Skills.get_skill(&"negotiation_tactics")
-		if skill != null:
-			price_modifier_bonus = skill.get_effect_at_rank(neg_spec.current_rank)
-			
-	# MasterMerchant
-	var merch_spec: SkillSpec = sheet.get_skill_spec(&"master_merchant")
-	if merch_spec != null and merch_spec.current_rank > 0:
-		var skill: Skill = Skills.get_skill(&"master_merchant")
-		if skill != null:
-			price_modifier_bonus += skill.get_effect_at_rank(merch_spec.current_rank)
-			
+	if trading_state == null:
+		return
+		
+	# Base Trading Level Bonus: +/- 0.05 per level
+	# We store this as a single value, but usage depends on context (buy vs sell)
+	# For now, let's store the raw level multiplier
+	price_modifier_bonus = float(trading_state.current_level) * 0.05
+	
+	# Perks (Skills)
 	# CaravanLogistics
-	var log_spec: SkillSpec = sheet.get_skill_spec(&"caravan_logistics")
-	if log_spec != null and log_spec.current_rank > 0:
-		var skill: Skill = Skills.get_skill(&"caravan_logistics")
-		if skill != null:
-			var val: float = skill.get_effect_at_rank(log_spec.current_rank)
-			speed_bonus = val
-			capacity_bonus = val
+	if trading_state.has_perk(&"caravan_logistics"):
+		# Fixed bonus for the perk (e.g. 25%)
+		speed_bonus += 0.25
+		capacity_bonus += 0.25
 			
 	# EstablishedRoutes
-	var route_spec: SkillSpec = sheet.get_skill_spec(&"established_routes")
-	if route_spec != null and route_spec.current_rank > 0:
-		var skill: Skill = Skills.get_skill(&"established_routes")
-		if skill != null:
-			capacity_bonus += skill.get_effect_at_rank(route_spec.current_rank)
+	if trading_state.has_perk(&"established_routes"):
+		capacity_bonus += 0.25
 			
 	# EconomicDominance
-	var dom_spec: SkillSpec = sheet.get_skill_spec(&"economic_dominance")
-	if dom_spec != null and dom_spec.current_rank > 0:
-		price_modifier_bonus += 1.0
+	if trading_state.has_perk(&"economic_dominance"):
+		# Big bonus
 		speed_bonus += 0.5
 		capacity_bonus += 0.5
+		# Maybe extra price bonus?
+		# price_modifier_bonus += 0.1
 		
 	# MarketMonopoly
-	var mono_spec: SkillSpec = sheet.get_skill_spec(&"market_monopoly")
-	if mono_spec != null and mono_spec.current_rank > 0:
-		price_modifier_bonus += 0.4
+	if trading_state.has_perk(&"market_monopoly"):
+		# price_modifier_bonus += 0.1
+		pass
+
+	# --- Exploration Domain ---
+	var exploration_state: DomainState = sheet.get_domain_state(&"Exploration")
+	if exploration_state:
+		# +1% Movement Speed per level
+		speed_bonus += float(exploration_state.current_level) * 0.01
+		
+	# --- Leadership Domain ---
+	var leadership_state: DomainState = sheet.get_domain_state(&"Leadership")
+	if leadership_state:
+		# +1% Party Size (Capacity) per level
+		capacity_bonus += float(leadership_state.current_level) * 0.01
 
 func award_xp(skill_id: StringName, value: float) -> void:
 	if caravan_state == null or caravan_state.leader_sheet == null:
 		return
 		
-	var spec: SkillSpec = caravan_state.leader_sheet.get_skill_spec(skill_id)
-	if spec == null:
+	var sheet: CharacterSheet = caravan_state.leader_sheet
+	var trading_state: DomainState = sheet.get_domain_state(&"Trading")
+	
+	if trading_state == null:
+		# Try to init
+		var domain_res = Skills.get_domain(&"Trading")
+		if domain_res:
+			trading_state = sheet.initialize_domain(domain_res)
+	
+	if trading_state == null:
 		return
 		
-	var def: Skill = Skills.get_skill(skill_id)
-	if def == null:
-		return
-		
-	# 1 XP per 100 PACs
+	# 1 XP per 100 PACs (Value)
 	var xp: float = value / 100.0
 	if xp > 0.0:
-		spec.current_xp += xp
-		
-		# Rank up check
-		while spec.current_rank < def.max_rank:
-			var needed: int = def.get_xp_for_rank(spec.current_rank + 1)
-			if needed <= 0 or spec.current_xp < float(needed):
-				break
-			spec.current_xp -= float(needed)
-			spec.current_rank += 1
-			
-			# Recalculate on rank up
-			recalculate_bonuses()
+		trading_state.add_xp(xp)
+		recalculate_bonuses()
 
 func _initialize_trading_skills() -> void:
 	if caravan_state == null or caravan_state.leader_sheet == null:
 		return
 		
-	var skills: Array[StringName] = [
-		&"market_analysis", &"caravan_logistics", &"negotiation_tactics",
-		&"market_monopoly", &"established_routes", &"master_merchant",
-		&"economic_dominance"
-	]
-	
-	for s in skills:
-		caravan_state.leader_sheet.add_skill(s, Skills.database)
+	# Initialize Trading Domain
+	var domain_res = Skills.get_domain(&"Trading")
+	if domain_res:
+		caravan_state.leader_sheet.initialize_domain(domain_res)

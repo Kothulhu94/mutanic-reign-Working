@@ -1,6 +1,6 @@
 # uid://0wf6j3u0re3i
 extends RefCounted
-class_name CharacterProgression
+
 
 ## Main character progression orchestrator
 ## Owns attributes and skills, coordinates XP distribution
@@ -8,33 +8,66 @@ class_name CharacterProgression
 
 # Core components
 var _attributes: CharacterAttributes = CharacterAttributes.new()
-var _skills: Dictionary = {}  # skill_id: StringName -> SkillSpec
+var _skills: Dictionary = {} # skill_id: StringName -> SkillSpec
 
 # Domain lookup (set externally or loaded from database)
-var _domains: Dictionary = {}  # domain_id: StringName -> DomainSpec
+var _domains: Dictionary = {} # domain_id: StringName -> DomainSpec
+
+# Domain state tracking (New System)
+var _domain_states: Dictionary = {} # domain_id: StringName -> DomainState
+
 
 ## Initialize with empty attributes and skills
 func _init() -> void:
 	_attributes.attribute_leveled.connect(_on_attribute_leveled)
 
-## Grant skill XP and distribute to attributes
+## Grant skill XP (redirects to Domain XP)
 ## event: "use", "success", "failure", "challenge"
 ## difficulty: 0.0 to 1.0
 func grant_skill_xp(skill_id: StringName, event: String, difficulty: float, base_xp: int = 100) -> void:
-	if not _skills.has(skill_id):
-		push_error("CharacterProgression: Unknown skill '%s'" % skill_id)
+	# Find the skill definition to get the domain
+	var skill_spec: SkillSpec = _skills.get(skill_id)
+	var domain_id: StringName = StringName()
+	
+	if skill_spec:
+		domain_id = skill_spec.domain_id
+	else:
+		# Try to look up in global database if we don't have the skill learned yet
+		# This assumes we have access to a global lookup, but for now let's rely on _skills
+		# or we can check _domains if we had a reverse lookup.
+		# If the skill is not learned, we might still want to give domain XP?
+		# For now, require skill to be known or at least identified.
+		pass
+
+	if domain_id == StringName():
+		# Fallback: try to find domain from registered domains
+		for d_id in _domains:
+			var domain = _domains[d_id]
+			# This is slow, but robust
+			for s in domain.skills:
+				if s.skill_id == skill_id:
+					domain_id = d_id
+					break
+			if domain_id != StringName():
+				break
+	
+	if domain_id == StringName():
+		push_warning("CharacterProgression: Could not find domain for skill '%s'" % skill_id)
 		return
 
-	var skill: SkillSpec = _skills[skill_id]
+	# Grant XP to the domain
+	grant_domain_xp(domain_id, float(base_xp)) # Simplified XP calculation for now
 
-	# Step 1: Calculate skill XP
-	var skill_xp: int = XPCalculator.calculate_skill_xp(base_xp, event, difficulty, skill.current_rank)
-
-	# Step 2: Award XP to skill
-	skill.add_xp(float(skill_xp))
-
+	# We do NOT add XP to the skill anymore, as per user request.
+	# But we still distribute attribute XP.
+	
 	# Step 3: Split XP to attributes (50/50 for now)
-	var split: Dictionary = XPCalculator.split_to_attributes(skill_xp)
+	# Use the base_xp or a calculated amount?
+	# Let's use the calculated amount from the old system to keep attribute progression similar
+	# or just use base_xp.
+	var calculated_xp: int = XPCalculator.calculate_skill_xp(base_xp, event, difficulty, 1) # Rank 1 as baseline
+	
+	var split: Dictionary = XPCalculator.split_to_attributes(calculated_xp)
 	var primary_xp: int = int(split["primary"])
 	var secondary_xp: int = int(split["secondary"])
 
@@ -43,9 +76,34 @@ func grant_skill_xp(skill_id: StringName, event: String, difficulty: float, base
 	secondary_xp = XPCalculator.apply_difficulty_modifier(secondary_xp, difficulty)
 
 	# Step 5: Distribute to attributes
-	# For now, distributing to first two attributes (Might, Guile) as placeholder
-	# In phase 2, this will lookup domain's primary/secondary attributes
 	_distribute_attribute_xp(primary_xp, secondary_xp)
+
+## Grant XP to a specific domain
+func grant_domain_xp(domain_id: StringName, amount: float) -> void:
+	var state: DomainState = _get_or_create_domain_state(domain_id)
+	if state:
+		state.add_xp(amount)
+
+func _get_or_create_domain_state(domain_id: StringName) -> DomainState:
+	if _domain_states.has(domain_id):
+		return _domain_states[domain_id]
+	
+	# Create new state
+	# We need the domain resource to configure it
+	var domain_res = _domains.get(domain_id)
+	if not domain_res:
+		# Try to load from global database if possible, or just create blank
+		# Assuming _domains is populated.
+		return null
+		
+	var state = DomainState.new()
+	state.configure(domain_res)
+	_domain_states[domain_id] = state
+	# Connect signals
+	state.domain_leveled_up.connect(_on_domain_leveled_up)
+	state.perk_unlocked.connect(_on_perk_unlocked)
+	
+	return state
 
 ## Distribute attribute XP (placeholder - will use domain lookup in phase 2)
 func _distribute_attribute_xp(primary_xp: int, secondary_xp: int) -> void:
@@ -107,8 +165,16 @@ func to_dict() -> Dictionary:
 
 	return {
 		"attributes": _attributes.to_dict(),
-		"skills": skills_data
+		"skills": skills_data,
+		"domain_states": _serialize_domain_states()
 	}
+
+func _serialize_domain_states() -> Dictionary:
+	var data: Dictionary = {}
+	for id in _domain_states:
+		if _domain_states[id]:
+			data[id] = _domain_states[id].to_dict()
+	return data
 
 ## Load from dictionary (for load game)
 func from_dict(data: Dictionary) -> void:
@@ -136,12 +202,48 @@ func from_dict(data: Dictionary) -> void:
 
 			skill.from_dict(skill_data)
 
+	# Load domain states
+	if data.has("domain_states"):
+		var domains_data: Dictionary = data["domain_states"]
+		for id in domains_data:
+			# We need to ensure the domain resource is available to configure properly
+			# But for loading, we might just load the raw data first
+			# Ideally we call _get_or_create_domain_state to link it to the resource
+			var state = DomainState.new()
+			state.from_dict(domains_data[id])
+			_domain_states[id] = state
+			# Re-connect signals
+			state.domain_leveled_up.connect(_on_domain_leveled_up)
+			state.perk_unlocked.connect(_on_perk_unlocked)
+
+
 ## Signal handlers
 func _on_attribute_leveled(attribute_name: StringName, new_level: int) -> void:
-	pass  # Can be used for notifications later
+	pass # Can be used for notifications later
 
 func _on_skill_ranked_up(skill_id: StringName, new_rank: int) -> void:
-	pass  # Can be used for notifications later
+	pass # Can be used for notifications later
+
+func _on_domain_leveled_up(domain_id: StringName, new_level: int) -> void:
+	print("Domain %s leveled up to %d!" % [domain_id, new_level])
+	# Here we could trigger a UI notification or check for perk unlocks
+
+func _on_perk_unlocked(domain_id: StringName, skill_id: StringName) -> void:
+	print("Perk %s unlocked in domain %s!" % [skill_id, domain_id])
+	
+	# Ensure the skill is marked as learned in the skills dictionary
+	var skill_spec: SkillSpec = _skills.get(skill_id)
+	if skill_spec == null:
+		skill_spec = SkillSpec.new()
+		skill_spec.skill_id = skill_id
+		skill_spec.domain_id = domain_id
+		skill_spec.current_rank = 1 # Unlocked
+		add_skill(skill_spec)
+	else:
+		if skill_spec.current_rank < 1:
+			skill_spec.current_rank = 1
+			skill_spec.skill_ranked_up.emit(skill_id, 1)
+
 
 ## Test method (commented, not executed by default)
 ## Demonstrates the XP system with all modifiers

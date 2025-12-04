@@ -34,6 +34,15 @@ class_name SkillDomain
 @export var bonus_at_rank_10: String = ""
 
 # ============================================================
+# PROGRESSION CONFIGURATION (New System)
+# ============================================================
+@export var xp_curve_base: int = 100
+@export var xp_curve_multiplier: float = 2.0
+@export var perk_unlock_levels: Array[int] = [1, 3, 6, 10, 15, 21]
+@export var passive_bonus_description: String = ""
+
+
+# ============================================================
 # METHODS
 # ============================================================
 
@@ -51,11 +60,11 @@ func get_domain_bonus_multiplier() -> float:
 	var total_ranks: int = get_total_domain_ranks()
 
 	if total_ranks >= 10:
-		return 1.20  # 20% bonus at rank 10+
+		return 1.20 # 20% bonus at rank 10+
 	elif total_ranks >= 5:
-		return 1.10  # 10% bonus at rank 5-9
+		return 1.10 # 10% bonus at rank 5-9
 	else:
-		return 1.0   # No bonus below rank 5
+		return 1.0 # No bonus below rank 5
 
 ## Check if domain bonus at rank 5 is active
 func has_bonus_rank_5() -> bool:
@@ -100,9 +109,9 @@ func get_total_effect_bonus(effect_type: StringName) -> float:
 ## Validate that the domain has all required fields
 func is_valid() -> bool:
 	return domain_id != StringName() and \
-	       display_name != "" and \
-	       primary_attribute != StringName() and \
-	       secondary_attribute != StringName()
+		   display_name != "" and \
+		   primary_attribute != StringName() and \
+		   secondary_attribute != StringName()
 
 ## Get count of skills by tier
 func get_tier_counts() -> Dictionary:

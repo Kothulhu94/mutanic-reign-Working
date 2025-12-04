@@ -209,11 +209,11 @@ func get_progress_percent() -> float:
 ## Validate that the skill has all required fields
 func is_valid() -> bool:
 	return skill_id != StringName() and \
-	       display_name != "" and \
-	       domain_id != StringName() and \
-	       effect_type != StringName() and \
-	       primary_attribute != StringName() and \
-	       secondary_attribute != StringName()
+		   display_name != "" and \
+		   domain_id != StringName() and \
+		   effect_type != StringName() and \
+		   primary_attribute != StringName() and \
+		   secondary_attribute != StringName()
 
 ## Serialize to dictionary (for save game)
 func to_dict() -> Dictionary:

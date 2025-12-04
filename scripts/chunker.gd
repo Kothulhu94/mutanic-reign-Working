@@ -1,8 +1,14 @@
 @tool
+class_name Chunker
 extends Node2D
 ##
 ## Chunker.gd — slice a large map texture into Sprite2D tiles (Godot 4.5)
 ## Attach to a Node2D (e.g., "Chunker") in your Overworld scene.
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		print("Chunker tool script loaded.")
+
 
 # ---- Inputs ----
 @export var texture: Texture2D
@@ -48,6 +54,15 @@ var _repoint := false
 			_repoint_textures()
 		_repoint = false
 
+var _regen_res := false
+@export var regenerate_resources: bool:
+	get:
+		return _regen_res
+	set(value):
+		if value:
+			_regenerate_resources()
+		_regen_res = false
+
 # ---- Helpers ----
 func _clear_children() -> void:
 	for child in get_children():
@@ -78,7 +93,7 @@ func _generate() -> void:
 			# ---- Sprite chunk ----
 			var at := AtlasTexture.new()
 			at.atlas = texture
-			at.region = Rect2i(rpos, rsize)
+			at.region = Rect2(Vector2(rpos), Vector2(rsize))
 
 			var sprite := Sprite2D.new()
 			sprite.name = "Sprite_%d_%d" % [x, y]
@@ -176,3 +191,38 @@ func _repoint_textures() -> void:
 					n.texture = load(png_path)
 	
 	print("Chunker: repointed sprites to AtlasTextures (memory optimized).")
+
+func _regenerate_resources() -> void:
+	if texture == null:
+		push_warning("Chunker: assign 'texture' first.")
+		return
+
+	var atlas_folder := "res://resources/map_chunks"
+	if not DirAccess.dir_exists_absolute(atlas_folder):
+		DirAccess.make_dir_recursive_absolute(atlas_folder)
+
+	var img_w: int = texture.get_width()
+	var img_h: int = texture.get_height()
+	var cols: int = int(ceil(float(img_w) / float(chunk_size.x)))
+	var rows: int = int(ceil(float(img_h) / float(chunk_size.y)))
+
+	print("Chunker: Regenerating %d AtlasTexture resources..." % [cols * rows])
+
+	for y in range(rows):
+		for x in range(cols):
+			var rpos := Vector2i(x * chunk_size.x, y * chunk_size.y)
+			var rsize := Vector2i(
+				min(chunk_size.x, img_w - rpos.x),
+				min(chunk_size.y, img_h - rpos.y)
+			)
+
+			var at := AtlasTexture.new()
+			at.atlas = texture
+			at.region = Rect2(Vector2(rpos), Vector2(rsize))
+
+			var save_path := "%s/chunk_%d_%d.tres" % [atlas_folder, x, y]
+			var err := ResourceSaver.save(at, save_path)
+			if err != OK:
+				push_error("Chunker: Failed to save %s" % save_path)
+	
+	print("Chunker: Done regenerating resources.")

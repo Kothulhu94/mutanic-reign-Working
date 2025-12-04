@@ -14,6 +14,6 @@ class_name DomainSpec
 ## Validate that the domain has all required fields
 func is_valid() -> bool:
 	return domain_id != StringName() and \
-	       display_name != "" and \
-	       primary_attribute != StringName() and \
-	       secondary_attribute != StringName()
+		   display_name != "" and \
+		   primary_attribute != StringName() and \
+		   secondary_attribute != StringName()

@@ -386,9 +386,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_6kee2"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_1umlq"]
@@ -510,9 +510,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_x3tpg"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ru26c"]
@@ -628,9 +628,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_uekov"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ellit"]
@@ -752,9 +752,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_iieoh"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_n5naq"]
@@ -888,9 +888,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_qw1kt"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_gloq7"]
@@ -1018,9 +1018,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_c837l"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_6yl17"]
@@ -1148,9 +1148,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_qtc6o"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jcf74"]
@@ -1272,9 +1272,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_qtg3h"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_wwduk"]
@@ -1396,9 +1396,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_024kq"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_j4mo2"]
@@ -1520,9 +1520,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_3sbqc"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ehjig"]
@@ -1632,9 +1632,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_lrily"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_o650b"]
@@ -1744,9 +1744,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_3th0v"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_uhpq6"]
@@ -1856,9 +1856,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_ta40q"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_8ffhk"]
@@ -1968,9 +1968,9 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_eum4q"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_lbnsy"]
@@ -2080,121 +2080,121 @@ agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_6am8v"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 512, 0, 512)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_j5p2u"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_8k8a0"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_hkjga"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_2b1ea"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_kb37d"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_anv0n"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jum3a"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_uivj3"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_nq2w7"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_uadll"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_iau5k"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_q1cwu"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_aabqw"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_klwu6"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_wak84"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_58wrp"]
 resource_local_to_scene = true
-vertices = PackedVector2Array(0, 0, 320, 0, 320, 320, 0, 320)
+vertices = PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 320, 0, 320, 320, 0, 320)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 512, 0, 512, 512, 0, 512)])
 agent_radius = 0.0
 
 [node name="Overworld" type="Node2D"]

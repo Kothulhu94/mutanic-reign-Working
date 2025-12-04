@@ -21,11 +21,55 @@ class_name CharacterSheet
 ## Dictionary of learned skills: { skill_id (StringName) -> SkillSpec instance }
 var skills: Dictionary = {}
 
+## Dictionary of domain states: { domain_id (StringName) -> DomainState instance }
+var domain_states: Dictionary = {}
+
 ## Troop inventory system
 ## Dictionary of recruited troops: { troop_id (StringName) -> count (int) }
 var troop_inventory: Dictionary = {}
 ## Maximum number of troops that can be recruited
 @export var max_troop_capacity: int = 10
+
+## Equipment System
+enum EquipmentSlot {
+	HEAD,
+	BODY,
+	LEGS,
+	FEET,
+	WEAPON_1,
+	WEAPON_2,
+	WEAPON_3,
+	WEAPON_4
+}
+
+## Dictionary mapping EquipmentSlot (int) -> item_id (StringName)
+## Stores currently equipped items
+var equipment: Dictionary = {}
+
+## Equips an item to a specific slot
+## Returns the previously equipped item_id, or StringName() if empty
+func equip_item(slot: EquipmentSlot, item_id: StringName) -> StringName:
+	var previous: StringName = StringName()
+	if equipment.has(slot):
+		previous = equipment[slot]
+	
+	equipment[slot] = item_id
+	return previous
+
+## Unequips an item from a specific slot
+## Returns the unequipped item_id, or StringName() if empty
+func unequip_item(slot: EquipmentSlot) -> StringName:
+	if not equipment.has(slot):
+		return StringName()
+		
+	var item_id: StringName = equipment[slot]
+	equipment.erase(slot)
+	return item_id
+
+## Get item in a specific slot
+func get_equipped_item(slot: EquipmentSlot) -> StringName:
+	return equipment.get(slot, StringName())
+
 
 ## Current health tracking for combat
 var current_health: int = 0
@@ -63,6 +107,29 @@ func get_effective_defense() -> int:
 # 	var speed_mod = attributes.get_modifier("agility") # Example attribute
 # 	return base_speed * (1.0 + speed_mod / 100.0) # Example modifier logic
 # 	return base_speed # Placeholder if no logic yet
+
+# --- Combat Modifiers ---
+
+func get_melee_damage_modifier() -> float:
+	var mod: float = 1.0
+	var melee_state: DomainState = get_domain_state(&"Melee")
+	if melee_state:
+		mod += float(melee_state.current_level) * 0.01
+	return mod
+
+func get_ranged_damage_modifier() -> float:
+	var mod: float = 1.0
+	var ranged_state: DomainState = get_domain_state(&"Ranged")
+	if ranged_state:
+		mod += float(ranged_state.current_level) * 0.01
+	return mod
+
+func get_artifact_damage_modifier() -> float:
+	var mod: float = 1.0
+	var artifact_state: DomainState = get_domain_state(&"ArtifactWeapons")
+	if artifact_state:
+		mod += float(artifact_state.current_level) * 0.01
+	return mod
 
 # --- Troop Management Functions ---
 
@@ -157,7 +224,7 @@ func add_skill(skill_id: StringName, skill_db: SkillDatabase) -> void:
 	# Create new skill instance
 	var new_skill_spec: SkillSpec = SkillSpec.new()
 	new_skill_spec.skill_id = skill_id
-	new_skill_spec.current_rank = 1  # Skills start at rank 1 (learned)
+	new_skill_spec.current_rank = 1 # Skills start at rank 1 (learned)
 	new_skill_spec.current_xp = 0.0
 
 	# Store in skills dictionary
@@ -190,6 +257,31 @@ func get_skill_spec(skill_id: StringName) -> SkillSpec:
 	return skills[skill_id]
 
 
+## Gets the DomainState instance for a specific domain.
+## Creates it if it doesn't exist.
+func get_domain_state(domain_id: StringName) -> DomainState:
+	if not domain_states.has(domain_id):
+		# Try to find the domain resource to initialize it
+		# This requires access to the SkillDatabase, which we don't have directly here
+		# So we return null or create a blank one. 
+		# Ideally, domains should be initialized via CharacterProgression.
+		return null
+	return domain_states[domain_id]
+
+## Initialize a domain state from a resource
+func initialize_domain(domain_res: SkillDomain) -> DomainState:
+	if not domain_res:
+		return null
+		
+	if domain_states.has(domain_res.domain_id):
+		return domain_states[domain_res.domain_id]
+		
+	var state = DomainState.new()
+	state.configure(domain_res)
+	domain_states[domain_res.domain_id] = state
+	return state
+
+
 ## Serializes character sheet data to a Dictionary for save games.
 func to_dict() -> Dictionary:
 	var save_data: Dictionary = {}
@@ -212,6 +304,21 @@ func to_dict() -> Dictionary:
 		if skill_spec:
 			skills_list.append(skill_spec.to_dict())
 	save_data["skills"] = skills_list
+
+	# Store domain states
+	var domains_list: Array = []
+	for domain_id in domain_states.keys():
+		var state: DomainState = domain_states[domain_id]
+		if state:
+			domains_list.append(state.to_dict())
+	save_data["domain_states"] = domains_list
+	
+	# Store equipment
+	var equipment_data: Dictionary = {}
+	for slot in equipment.keys():
+		equipment_data[str(slot)] = equipment[slot]
+	save_data["equipment"] = equipment_data
+
 
 	return save_data
 
@@ -241,6 +348,23 @@ func from_dict(data: Dictionary) -> void:
 				new_skill_spec.from_dict(skill_data)
 				# Use the loaded skill_id as the key
 				skills[new_skill_spec.skill_id] = new_skill_spec
+
+	# Load domain states
+	if data.has("domain_states") and data["domain_states"] is Array:
+		var domains_list: Array = data["domain_states"]
+		for domain_data in domains_list:
+			if domain_data is Dictionary:
+				var state = DomainState.new()
+				state.from_dict(domain_data)
+				domain_states[state.domain_id] = state
+
+	# Load equipment
+	if data.has("equipment") and data["equipment"] is Dictionary:
+		var equipment_data: Dictionary = data["equipment"]
+		for slot_str in equipment_data.keys():
+			var slot: int = int(slot_str)
+			var item_id: StringName = StringName(equipment_data[slot_str])
+			equipment[slot] = item_id
 
 
 ## Initializes current health to maximum effective health
